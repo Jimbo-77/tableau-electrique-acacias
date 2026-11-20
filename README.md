@@ -5,7 +5,7 @@ représentation des tableaux électriques de la rénovation
 
 - `index.html` : page web interactive autonome (HTML, CSS et JavaScript dans un seul fichier, sans dépendance). Un clic sur un module du tableau affiche sa fiche : calibre, référence Legrand, section, différentiel amont, usage, points desservis et remarques.
 
-La page représente le tableau principal (4 rangées + coffret des télérupteurs) et le tableau des combles, avec le disjoncteur de branchement, la répartition, les peignes et les emplacements réservés aux télérupteurs connectés.
+La page représente le tableau principal (4 rangées + coffret des télérupteurs) et le tableau des combles, avec le disjoncteur de branchement, le répartiteur modulaire (rangée 4) et ses liaisons vers les têtes de groupe, les peignes et les emplacements réservés aux télérupteurs connectés.
 
 ## Ajouter un module
 

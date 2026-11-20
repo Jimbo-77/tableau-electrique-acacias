@@ -119,7 +119,7 @@ function dj(cal, nom, points, extra = {}) {
 function id(cal, nom, extra = {}) {
   return Object.assign({
     kind: "id", n: 2, cal, rating: [cal + "A", "30mA"], nom, type: "Interrupteur différentiel",
-    ref: REF["id" + cal], appareil: "DX³-ID 2P, 30 mA, type A, arrivée vis / départ automatique"
+    ref: REF["id" + cal], appareil: "DX³-ID 2P, 30 mA, type A, arrivée haute à vis, départ haut automatique vers le peigne"
   }, extra);
 }
 function tl(point, circuit) {
@@ -134,10 +134,11 @@ const E = {
   AGCP: { kind: "agcp", nom: "Disjoncteur de branchement", type: "Appareil Enedis (AGCP)",
     infos: [["Fourni par", "Enedis, dans la GTL"], ["Calibre", "Réglé selon l'abonnement (ex. 60 A pour 12 kVA)"], ["Différentiel", "500 mA, sélectif (S)"]],
     usage: "Tête de toute l'installation. Il alimente la répartition du tableau principal." },
-  REPART: { kind: "repart", nom: "Répartition vers les têtes de rangée", type: "Liaisons en fil souple",
-    infos: [["Conducteurs", "H07V-K avec embouts, ou cordons de repiquage"], ["Section", "10 mm² jusqu'à 12 kVA, 16 mm² au-delà"]],
-    usage: "Amène la phase et le neutre du disjoncteur de branchement jusqu'au parafoudre et à l'arrivée de chaque interrupteur différentiel.",
-    note: "Un peigne vertical est possible, mais celui de la gamme Drivia est limité à 12 kVA : à choisir une fois l'abonnement fixé." },
+  REPART: { kind: "repart", n: 6, rating: ["RÉPART.", "100 A"], nom: "Répartiteur modulaire", type: "Répartiteur bipolaire à barreaux étagés, 100 A, 10 départs, 6 modules",
+    ref: "Legrand 4 004 02",
+    infos: [["Arrivée", "6 à 16 mm² souple (10 à 25 mm² rigide)"], ["Départs", "1,5 à 10 mm² souple, bornes à vis"], ["Utilisés", "7 départs sur 9 (parafoudre + 6 interrupteurs différentiels)"]],
+    usage: "Reçoit la phase et le neutre du disjoncteur de branchement et les redistribue en fil souple 10 mm² vers le parafoudre et l'arrivée (en haut, à vis) de chaque interrupteur différentiel.",
+    note: "Préféré au peigne vertical VX³ (4 050 02) : celui-ci est limité à 12 kVA et n'alimente qu'un appareil par rangée, alors que les rangées 1 à 3 ont 2 ou 3 têtes de groupe. 2 départs restent libres pour une évolution." },
   SPD: { kind: "spd", n: 2, rating: ["SPD", "T2+T3"], nom: "Parafoudre", type: "Parafoudre type 2+3, 1P+N",
     ref: "Legrand 0 039 51", appareil: "Protection de déconnexion intégrée",
     usage: "Protège l'installation contre les surtensions (foudre, manœuvres sur le réseau).",
@@ -223,7 +224,7 @@ const PANELS = {
       { label: "Rangée 1", items: ["SPD", "ID1", "P1", "P2", "P4", "VDI", "ID5", "P5", "P6", "P7", "SS"] },
       { label: "Rangée 2", items: ["ID2", "P3", "S1", "S2", "S3", "S4", "S5", "ID4", "T1", "PAC1", "PAC2"] },
       { label: "Rangée 3", items: ["ID3", "E1", "E2", "E3", "E4", "E5", "VR", "VMC", "ID7", "TDC", "IDVE", "DJVE", "MXVE"] },
-      { label: "Rangée 4 · réserve (délesteur, évolutions)", items: ["TL19"] },
+      { label: "Rangée 4 · répartiteur et réserve", items: ["REPART", "TL19"] },
       { label: "Coffret 1 rangée · télérupteurs connectés", items: ["TL1","TL2","TL3","TL4","TL5","TL6","TL7","TL8","TL9","TL10","TL11","TL12","TL13","TL14","TL15","TL16","TL17","TL18"] }
     ]
   },
@@ -241,7 +242,7 @@ const PANELS = {
 /* =====================================================================
    RELATIONS (calculées à partir des rangées)
    ===================================================================== */
-const PANEL_OF = { REPART: "principal" };
+const PANEL_OF = {};
 for (const [pk, p] of Object.entries(PANELS)) {
   PANEL_OF[p.source] = pk;
   for (const r of p.rows) {
@@ -284,7 +285,7 @@ for (const [k, m] of Object.entries(E)) if (m.kind === "tl") (E[m.circuit].tls =
    ===================================================================== */
 const NS = "http://www.w3.org/2000/svg";
 const svg = document.getElementById("schema");
-const U = 36, H = 150, PITCH = 270, TOP = 110, RAIL_X = 160, BUS_N = 118, BUS_L = 132;
+const U = 36, H = 150, PITCH = 300, TOP = 110, RAIL_X = 210;
 const ROUGE = "#c0392b", BLEU = "#2e6fd1", VERT = "#3f9a4b";
 let panelCourant = null, zoom = 1, vbW = 0, vbH = 0, selection = null;
 
@@ -301,6 +302,9 @@ function hitGroup(k) {
   return g;
 }
 function poles(x, n) { return n === 2 ? { N: x + U * 0.5, L: x + U * 1.5 } : { N: x + 10, L: x + U - 12 }; }
+// Interrupteur différentiel : arrivée à vis (module de gauche), départ automatique vers le peigne (module de droite)
+function polesID(x) { return { arrN: x + 9, arrL: x + 25, N: x + U + 9, L: x + U + 25 }; }
+function arrivee(k, p) { return E[k].kind === "id" ? (q => ({ N: q.arrN, L: q.arrL }))(polesID(p.x)) : poles(p.x, p.n); }
 
 function bornes(g, x, n, y, mode) {
   const p = poles(x, n);
@@ -326,9 +330,24 @@ function dessinerModule(k, x, top) {
     el("text", { x: cx, y: top + H - 10, "text-anchor": "middle", "font-size": 8, fill: "#8a887f" }, g, LABEL[m.circuit] || m.circuit);
     return;
   }
+  if (m.kind === "repart") { dessinerRepart(g, k, x, top, w); return; }
   el("rect", { class: "body", x, y: top, width: w, height: H, rx: 4, fill: "url(#gBody)", stroke: "#b9b6ad" }, g);
-  bornes(g, x, n, top + 4, m.kind === "dj" || m.kind === "id" ? "auto" : "vis");
-  bornes(g, x, n, top + H - 24, m.kind === "dj" ? "auto" : "vis");
+  if (m.kind === "id") {
+    const q = polesID(x), y = top + 4;
+    el("rect", { x: x + 2, y, width: w - 4, height: 20, rx: 2, fill: "#dddbd4" }, g);
+    for (const cx of [q.arrN, q.arrL]) {
+      el("circle", { cx, cy: y + 10, r: 5.5, fill: "#cfcdc6", stroke: "#85837c" }, g);
+      el("path", { d: `M${cx - 3.5} ${y + 10}H${cx + 3.5}M${cx} ${y + 6.5}V${y + 13.5}`, stroke: "#5c5b56", "stroke-width": 1.3 }, g);
+    }
+    for (const cx of [q.N, q.L]) {
+      el("rect", { x: cx - 4.5, y: y + 3, width: 9, height: 14, rx: 2, fill: "#3a3936" }, g);
+      el("rect", { x: cx - 2.5, y: y + 5, width: 5, height: 4, rx: 1, fill: "#f2a33a" }, g);
+    }
+    el("rect", { x: x + 2, y: top + H - 24, width: w - 4, height: 20, rx: 2, fill: "#e4e2dc" }, g);
+  } else {
+    bornes(g, x, n, top + 4, m.kind === "dj" ? "auto" : "vis");
+    bornes(g, x, n, top + H - 24, m.kind === "dj" ? "auto" : "vis");
+  }
   el("rect", { x: x + 4, y: top + 28, width: w - 8, height: 78, rx: 3, fill: "#f8f7f4", stroke: "#d4d1c8" }, g);
   el("text", { x: cx, y: top + 41, "text-anchor": "middle", "font-size": 9.5, "font-weight": 700, fill: "#2b2a27" }, g, m.rating[0]);
   if (m.rating[1]) el("text", { x: cx, y: top + 101, "text-anchor": "middle", "font-size": 8, fill: "#55534d" }, g, m.rating[1]);
@@ -360,6 +379,38 @@ function dessinerModule(k, x, top) {
   }
 }
 
+// Répartiteur : arrivée en haut à gauche, départs en bas (paires neutre / phase)
+const REP_PAIRES = 8;
+function repDepart(x, i) { return { N: x + 16 + i * 25, L: x + 27 + i * 25 }; }
+function dessinerRepart(g, k, x, top, w) {
+  el("rect", { class: "body", x, y: top, width: w, height: H, rx: 4, fill: "url(#gBody)", stroke: "#b9b6ad" }, g);
+  // bornes d'arrivée (grosses vis)
+  el("rect", { x: x + 4, y: top + 4, width: 60, height: 22, rx: 2, fill: "#dddbd4" }, g);
+  [[x + 18, BLEU], [x + 48, ROUGE]].forEach(([cx, c]) => {
+    el("circle", { cx, cy: top + 15, r: 7.5, fill: "#cfcdc6", stroke: c, "stroke-width": 1.6 }, g);
+    el("path", { d: `M${cx - 4.5} ${top + 15}H${cx + 4.5}M${cx} ${top + 10.5}V${top + 19.5}`, stroke: "#4a4945", "stroke-width": 1.4 }, g);
+  });
+  el("text", { x: x + 72, y: top + 19, "font-size": 8, fill: "#6b6a64" }, g, "arrivée");
+  // barreaux étagés
+  el("rect", { x: x + 8, y: top + 40, width: w - 16, height: 12, rx: 2, fill: "#5b8fe0", stroke: "#2e5fa8" }, g);
+  el("rect", { x: x + 8, y: top + 58, width: w - 16, height: 12, rx: 2, fill: "#d9705f", stroke: "#a3392b" }, g);
+  el("text", { x: x + 14, y: top + 49.5, "font-size": 8, "font-weight": 700, fill: "#fff" }, g, "N");
+  el("text", { x: x + 14, y: top + 67.5, "font-size": 8, "font-weight": 700, fill: "#fff" }, g, "L");
+  el("rect", { x: x + w / 2 - 50, y: top + 80, width: 100, height: 22, rx: 3, fill: "#f8f7f4", stroke: "#d4d1c8" }, g);
+  el("text", { x: x + w / 2, y: top + 95, "text-anchor": "middle", "font-size": 9, "font-weight": 700, fill: "#2b2a27" }, g, "Répartiteur 100 A");
+  el("rect", { x: x + 3, y: top + 109, width: w - 6, height: 14, rx: 2, fill: "#fffef8", stroke: "#cfccc2" }, g);
+  el("text", { x: x + w / 2, y: top + 119.5, "text-anchor": "middle", "font-size": 8.5, "font-weight": 700, fill: "#2b2a27" }, g, "4 004 02");
+  // bornes de départ
+  el("rect", { x: x + 4, y: top + H - 24, width: w - 8, height: 20, rx: 2, fill: "#dddbd4" }, g);
+  for (let i = 0; i < REP_PAIRES; i++) {
+    const d = repDepart(x, i);
+    [[d.N, BLEU], [d.L, ROUGE]].forEach(([cx, c]) => {
+      el("circle", { cx, cy: top + H - 14, r: 4.6, fill: "#cfcdc6", stroke: c, "stroke-width": 1.3 }, g);
+      el("path", { d: `M${cx - 2.8} ${top + H - 14}H${cx + 2.8}`, stroke: "#4a4945", "stroke-width": 1.2 }, g);
+    });
+  }
+}
+
 function dessiner(pk) {
   const P = PANELS[pk];
   svg.innerHTML = "";
@@ -376,7 +427,7 @@ function dessiner(pk) {
   const pos = {};
   P.rows.forEach((r, i) => {
     const top = TOP + i * PITCH;
-    el("text", { x: RAIL_X, y: top - 42, "font-size": 11, "font-weight": 600, fill: "#6b6a64" }, svg, r.label);
+    el("text", { x: RAIL_X, y: top - 66, "font-size": 11, "font-weight": 600, fill: "#6b6a64" }, svg, r.label);
     const railW = P.modules * U + 16;
     el("rect", { x: RAIL_X - 8, y: top + H / 2 - 11, width: railW, height: 22, rx: 2, fill: "url(#gRail)" });
     for (let x = RAIL_X; x < RAIL_X + railW - 20; x += 22) el("rect", { x, y: top + H / 2 - 3, width: 12, height: 6, rx: 3, fill: "#8d8c86" });
@@ -384,16 +435,16 @@ function dessiner(pk) {
     r.items.forEach(k => { pos[k] = { x, top, n: E[k].n }; dessinerModule(k, x, top); x += E[k].n * U; used += E[k].n; });
     for (let j = used; j < P.modules; j++)
       el("rect", { x: RAIL_X + j * U, y: top, width: U - 2, height: H, rx: 4, fill: "none", stroke: "#b9b6ad", "stroke-dasharray": "3 4" });
-    el("text", { x: RAIL_X + P.modules * U - 2, y: top - 42, "text-anchor": "end", "font-size": 10, fill: "#8a887f" }, svg, `${used} / ${P.modules} modules`);
+    el("text", { x: RAIL_X + P.modules * U - 2, y: top - 66, "text-anchor": "end", "font-size": 10, fill: "#8a887f" }, svg, `${used} / ${P.modules} modules`);
 
     r.groupes.forEach(gp => {
       const g = hitGroup(gp.id), first = pos[gp.members[0]], last = pos[gp.members.at(-1)];
-      const x1 = first.x + 4, x2 = last.x + last.n * U - 8, yb = top - 26;
+      const x1 = E[gp.members[0]].kind === "id" ? first.x + U + 2 : first.x + 4, x2 = last.x + last.n * U - 8, yb = top - 26;
       el("rect", { class: "body", x: x1, y: yb, width: x2 - x1, height: 14, rx: 4, fill: "#b9b7b0", stroke: "#8f8d86" }, g);
       el("line", { x1: x1 + 4, x2: x2 - 4, y1: yb + 4.5, y2: yb + 4.5, stroke: BLEU, "stroke-width": 2.2 }, g);
       el("line", { x1: x1 + 4, x2: x2 - 4, y1: yb + 9.5, y2: yb + 9.5, stroke: ROUGE, "stroke-width": 2.2 }, g);
       gp.members.forEach(k => {
-        const p = poles(pos[k].x, pos[k].n);
+        const p = E[k].kind === "id" ? polesID(pos[k].x) : poles(pos[k].x, pos[k].n);
         el("rect", { x: p.N - 2.5, y: yb + 12, width: 5, height: top + 14 - yb - 12, fill: BLEU, rx: 1 }, g);
         el("rect", { x: p.L - 2.5, y: yb + 12, width: 5, height: top + 14 - yb - 12, fill: ROUGE, rx: 1 }, g);
       });
@@ -426,23 +477,39 @@ function dessiner(pk) {
     srcN = { x: x + 34, y: y + h }; srcL = { x: x + 66, y: y + h };
   }
 
-  // Répartition : bus vertical à gauche + liaison vers l'arrivée (bas) de chaque ID et du parafoudre
+  // Liaisons d'alimentation des têtes de groupe (arrivée en haut, à vis)
   const cibles = P.rows.flatMap(r => r.items).filter(k => E[k].kind === "id" || E[k].kind === "spd");
   if (!cibles.length) return;
-  const busG = pk === "principal" ? hitGroup("REPART") : g;
-  const busEnd = Math.max(...cibles.map(k => pos[k].top)) + H + 50;
-  const wires = [
-    [`M${srcN.x} ${srcN.y}V${srcN.y + 34}H${BUS_N}V${busEnd}`, BLEU],
-    [`M${srcL.x} ${srcL.y}V${srcL.y + 22}H${BUS_L}V${busEnd - 8}`, ROUGE]
-  ];
-  cibles.forEach(k => {
-    const p = poles(pos[k].x, pos[k].n), yT = pos[k].top + H - 14, yF = pos[k].top + H + 50;
-    wires.push([`M${BUS_N} ${yF}H${p.N}V${yT}`, BLEU]);
-    wires.push([`M${BUS_L} ${yF - 8}H${p.L}V${yT}`, ROUGE]);
-  });
-  wires.forEach(([d, c]) => {
-    el("path", { class: "wire-hit", d }, busG);
-    el("path", { class: "wire", d, stroke: c, "stroke-width": 3.5, fill: "none", "stroke-linejoin": "round", "stroke-linecap": "round" }, busG);
+  const parRangee = {};
+  const trace = (grp, d, c, w = 3.2) => {
+    el("path", { class: "wire-hit", d }, grp);
+    el("path", { class: "wire", d, stroke: c, "stroke-width": w, fill: "none", "stroke-linejoin": "round", "stroke-linecap": "round" }, grp);
+  };
+  const gutN = i => RAIL_X - 90 + i * 4, gutL = i => RAIL_X - 54 + i * 4;
+  let depart;   // (i) -> { N: [x, y], L: [x, y], prefixN, prefixL }
+  let busG;
+  if (pk === "principal") {
+    const r = pos.REPART, yb = r.top + H - 14, base = r.top + H + 12;
+    busG = hitGroup("REPART");
+    // disjoncteur Enedis -> arrivée du répartiteur (16 mm² ou 10 mm² selon l'abonnement)
+    const arrN = r.x + 18, arrL = r.x + 48, yA = r.top + 15;
+    trace(g, `M${srcN.x} ${srcN.y}V${r.top - 22}H${arrN}V${yA}`, BLEU, 4.4);
+    trace(g, `M${srcL.x} ${srcL.y}V${r.top - 30}H${arrL}V${yA}`, ROUGE, 4.4);
+    depart = i => {
+      const d = repDepart(r.x, i);
+      return { pN: `M${d.N} ${yb}V${base + i * 8}H${gutN(i)}`, pL: `M${d.L} ${yb}V${base + i * 8 + 4}H${gutL(i)}` };
+    };
+  } else {
+    busG = g;
+    depart = i => ({ pN: `M${srcN.x} ${srcN.y}V${srcN.y + 20 + i * 8}H${gutN(i)}`, pL: `M${srcL.x} ${srcL.y}V${srcL.y + 24 + i * 8}H${gutL(i)}` });
+  }
+  cibles.forEach((k, i) => {
+    const p = pos[k], a = arrivee(k, p), yT = p.top + 14;
+    const j = parRangee[p.top] = (parRangee[p.top] ?? -1) + 1;
+    const yN = p.top - 34 - j * 9, yL = p.top - 38 - j * 9;
+    const dp = depart(i);
+    trace(busG, `${dp.pN}V${yN}H${a.N}V${yT}`, BLEU);
+    trace(busG, `${dp.pL}V${yL}H${a.L}V${yT}`, ROUGE);
   });
 }
 
