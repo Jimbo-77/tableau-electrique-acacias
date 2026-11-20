@@ -136,9 +136,9 @@ const E = {
     usage: "Tête de toute l'installation. Il alimente la répartition du tableau principal." },
   REPART: { kind: "repart", n: 6, rating: ["RÉPART.", "100 A"], nom: "Répartiteur modulaire", type: "Répartiteur bipolaire à barreaux étagés, 100 A, 10 départs, 6 modules",
     ref: "Legrand 4 004 02",
-    infos: [["Arrivée", "6 à 16 mm² souple (10 à 25 mm² rigide)"], ["Départs", "1,5 à 10 mm² souple, bornes à vis"], ["Utilisés", "7 départs sur 9 (parafoudre + 6 interrupteurs différentiels)"]],
+    infos: [["Arrivée", "6 à 16 mm² souple (10 à 25 mm² rigide)"], ["Départs", "1,5 à 10 mm² souple, bornes à vis"], ["Utilisés", "9 départs sur 9 (parafoudre + 8 interrupteurs différentiels)"]],
     usage: "Reçoit la phase et le neutre du disjoncteur de branchement et les redistribue en fil souple 10 mm² vers le parafoudre et l'arrivée (en haut, à vis) de chaque interrupteur différentiel.",
-    note: "Préféré au peigne vertical VX³ (4 050 02) : celui-ci est limité à 12 kVA et n'alimente qu'un appareil par rangée, alors que les rangées 1 à 3 ont 2 ou 3 têtes de groupe. 2 départs restent libres pour une évolution." },
+    note: "Préféré au peigne vertical VX³ (4 050 02) : celui-ci est limité à 12 kVA et n'alimente qu'un appareil par rangée, alors que les rangées 1 à 3 ont 2 ou 3 têtes de groupe. Les 9 départs sont utilisés : une nouvelle tête de groupe passera par un repiquage ou un second répartiteur." },
   SPD: { kind: "spd", n: 2, rating: ["SPD", "T2+T3"], nom: "Parafoudre", type: "Parafoudre type 2+3, 1P+N",
     ref: "Legrand 0 039 51", appareil: "Protection de déconnexion intégrée",
     usage: "Protège l'installation contre les surtensions (foudre, manœuvres sur le réseau).",
@@ -169,7 +169,7 @@ const E = {
 
   ID3: id(40, "ID3 – Éclairage et ventilation"),
   E1: dj(10, "E1 – Éclairage séjour", ["Séjour : 3 points (lampes Hue, circuit sous tension permanente)"]),
-  E2: dj(10, "E2 – Éclairage entrée et circulations", ["Entrée", "Dégagement", "Escalier (RDC)", "WC", "Cellier (détecteur de présence)", "Applique extérieure côté rue", "Applique extérieure côté jardin"]),
+  E2: dj(10, "E2 – Éclairage entrée et circulations", ["Entrée", "Dégagement", "Escalier (RDC)", "WC", "Cellier (détecteur de présence)"]),
   E3: dj(10, "E3 – Éclairage cuisine", ["Cuisine : 3 plafonniers", "Éclairage sous meubles hauts (boîte en attente pour le driver LED)"]),
   E4: dj(10, "E4 – Éclairage chambre et bureau", ["Chambre 01", "Bureau"], { note: "Pièces prévues en Hue." }),
   E5: dj(10, "E5 – Éclairage palier, escalier, salle d'eau", ["Palier", "Escalier (étage)", "Salle d'eau"]),
@@ -192,10 +192,23 @@ const E = {
   /* ---------- Coffret 1 rangée : télérupteurs ---------- */
   TL1: tl("Séjour 1", "E1"), TL2: tl("Séjour 2", "E1"), TL3: tl("Séjour 3", "E1"),
   TL4: tl("Entrée", "E2"), TL5: tl("Dégagement", "E2"), TL6: tl("Escalier", "E2"), TL7: tl("WC", "E2"),
-  TL8: tl("Cellier", "E2"), TL9: tl("Applique rue", "E2"), TL10: tl("Applique jardin", "E2"),
+  TL8: tl("Cellier", "E2"), TL9: tl("Façade (rue)", "EEXT"), TL10: tl("Jardin", "EEXT"),
   TL11: tl("Cuisine 1", "E3"), TL12: tl("Cuisine 2", "E3"), TL13: tl("Cuisine 3", "E3"),
   TL14: tl("Chambre 01", "E4"), TL15: tl("Bureau", "E4"),
   TL16: tl("Palier", "E5"), TL17: tl("Escalier étage", "E5"), TL18: tl("Salle d'eau", "E5"),
+
+  /* ---------- Extérieur (rangée 4) ---------- */
+  IDEXT: id(63, "ID-EXT – Circuits extérieurs", {
+    usage: "Différentiel 30 mA réservé à l'extérieur. Un défaut dehors (humidité) ne coupe que l'extérieur : frigo, réseau et domotique restent alimentés.",
+    note: "Obligatoire dès qu'un circuit alimente du matériel non fixé au bâtiment (chalet, bornes ou spots de jardin, prise sur potelet). 63 A pour encaisser le futur départ du chalet." }),
+  EEXT: dj(10, "E-EXT – Éclairage extérieur", ["Éclairage façade (côté rue)", "Éclairage côté jardin"],
+    { note: "Luminaires IP44 au minimum. Une boîte en attente côté jardin permet d'ajouter des spots plus tard." }),
+  PEXT: dj(16, "P-EXT – Prise extérieure", ["Prise étanche Plexo IP55 (0 697 31) en façade"],
+    { section: "2,5 mm² (préfilé 3G2,5 sous gaine Ø 20)", note: "2,5 mm² pour les outils de jardin sur rallonge. Ajouter une prise par point souhaité (8 maximum sur le circuit)." }),
+  CHALET: dj(32, "CHALET – Départ chalet (option)", ["Futur chalet : petit tableau sur place"], {
+    reserve: true, section: "6 mm² en R2V sous gaine TPC Ø 63 (à confirmer selon la distance)",
+    ref: "Legrand 4 067 87 (pas encore acheté)",
+    note: "Emplacement réservé. La gaine TPC Ø 63 avec tire-fil est posée pendant le terrassement ; câble et calibre se décident avec l'usage du chalet (éclairage et prises, ou chauffage)." }),
 
   /* ---------- Tableau des combles ---------- */
   ARRC: { kind: "arr", nom: "Arrivée depuis le tableau principal", type: "Liaison TD-C",
@@ -212,7 +225,7 @@ const E = {
 };
 
 // Libellé court affiché sur l'étiquette de chaque appareil
-const LABEL = { PAC1: "PAC-1", PAC2: "PAC-2", TDC: "TD-C", IDVE: "ID VE", DJVE: "VE", MXVE: "MX",
+const LABEL = { IDEXT: "ID-EXT", EEXT: "E-EXT", PEXT: "P-EXT", CHALET: "CHAL.", PAC1: "PAC-1", PAC2: "PAC-2", TDC: "TD-C", IDVE: "ID VE", DJVE: "VE", MXVE: "MX",
   IDC1: "ID-C1", IDC2: "ID-C2", EC: "E-C", PC1: "P-C1", PC2: "P-C2", PSB: "P-SB", SSC: "SS-C" };
 
 const PANELS = {
@@ -224,7 +237,7 @@ const PANELS = {
       { label: "Rangée 1", items: ["SPD", "ID1", "P1", "P2", "P4", "VDI", "ID5", "P5", "P6", "P7", "SS"] },
       { label: "Rangée 2", items: ["ID2", "P3", "S1", "S2", "S3", "S4", "S5", "ID4", "T1", "PAC1", "PAC2"] },
       { label: "Rangée 3", items: ["ID3", "E1", "E2", "E3", "E4", "E5", "VR", "VMC", "ID7", "TDC", "IDVE", "DJVE", "MXVE"] },
-      { label: "Rangée 4 · répartiteur et réserve", items: ["REPART", "TL19"] },
+      { label: "Rangée 4 · répartiteur, extérieur et réserve", items: ["REPART", "IDEXT", "EEXT", "PEXT", "CHALET", "TL19"] },
       { label: "Coffret 1 rangée · télérupteurs connectés", items: ["TL1","TL2","TL3","TL4","TL5","TL6","TL7","TL8","TL9","TL10","TL11","TL12","TL13","TL14","TL15","TL16","TL17","TL18"] }
     ]
   },
@@ -285,7 +298,7 @@ for (const [k, m] of Object.entries(E)) if (m.kind === "tl") (E[m.circuit].tls =
    ===================================================================== */
 const NS = "http://www.w3.org/2000/svg";
 const svg = document.getElementById("schema");
-const U = 36, H = 150, PITCH = 300, TOP = 110, RAIL_X = 210;
+const U = 36, H = 150, PITCH = 310, TOP = 110, RAIL_X = 210;
 const ROUGE = "#c0392b", BLEU = "#2e6fd1", VERT = "#3f9a4b";
 let panelCourant = null, zoom = 1, vbW = 0, vbH = 0, selection = null;
 
@@ -331,6 +344,10 @@ function dessinerModule(k, x, top) {
     return;
   }
   if (m.kind === "repart") { dessinerRepart(g, k, x, top, w); return; }
+  if (m.reserve) {
+    g.setAttribute("opacity", .55);
+    el("rect", { x: x - 2, y: top - 2, width: w + 4, height: H + 4, rx: 5, fill: "none", stroke: "#6b6a64", "stroke-dasharray": "4 3" }, g);
+  }
   el("rect", { class: "body", x, y: top, width: w, height: H, rx: 4, fill: "url(#gBody)", stroke: "#b9b6ad" }, g);
   if (m.kind === "id") {
     const q = polesID(x), y = top + 4;
@@ -380,8 +397,8 @@ function dessinerModule(k, x, top) {
 }
 
 // Répartiteur : arrivée en haut à gauche, départs en bas (paires neutre / phase)
-const REP_PAIRES = 8;
-function repDepart(x, i) { return { N: x + 16 + i * 25, L: x + 27 + i * 25 }; }
+const REP_PAIRES = 9;
+function repDepart(x, i) { return { N: x + 14 + i * 23, L: x + 24 + i * 23 }; }
 function dessinerRepart(g, k, x, top, w) {
   el("rect", { class: "body", x, y: top, width: w, height: H, rx: 4, fill: "url(#gBody)", stroke: "#b9b6ad" }, g);
   // bornes d'arrivée (grosses vis)
@@ -493,11 +510,11 @@ function dessiner(pk) {
     busG = hitGroup("REPART");
     // disjoncteur Enedis -> arrivée du répartiteur (16 mm² ou 10 mm² selon l'abonnement)
     const arrN = r.x + 18, arrL = r.x + 48, yA = r.top + 15;
-    trace(g, `M${srcN.x} ${srcN.y}V${r.top - 22}H${arrN}V${yA}`, BLEU, 4.4);
-    trace(g, `M${srcL.x} ${srcL.y}V${r.top - 30}H${arrL}V${yA}`, ROUGE, 4.4);
+    trace(g, `M${srcN.x} ${srcN.y}V${r.top - 10}H${arrN}V${yA}`, BLEU, 4.4);
+    trace(g, `M${srcL.x} ${srcL.y}V${r.top - 18}H${arrL}V${yA}`, ROUGE, 4.4);
     depart = i => {
       const d = repDepart(r.x, i);
-      return { pN: `M${d.N} ${yb}V${base + i * 8}H${gutN(i)}`, pL: `M${d.L} ${yb}V${base + i * 8 + 4}H${gutL(i)}` };
+      return { pN: `M${d.N} ${yb}V${base + i * 7}H${gutN(i)}`, pL: `M${d.L} ${yb}V${base + i * 7 + 3.5}H${gutL(i)}` };
     };
   } else {
     busG = g;
