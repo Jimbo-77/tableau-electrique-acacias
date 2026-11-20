@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tableau électrique – rue des Acacias (exemple)</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --ink: #1f1e1b; --muted: #6b6a64; --line: #d9d7cf;
+    --panel: #ffffff; --rail: #b9b7ae; --accent: #185fa5;
+    --id: #eeedfe; --id-b: #534ab7;
+    --dj: #f1efe8; --dj-b: #888780;
+    --sel: #faeeda; --sel-b: #ba7517;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1b19; --ink: #f1efe8; --muted: #a6a49c; --line: #3a3934;
+      --panel: #262522; --rail: #57554e; --accent: #7fb2e5;
+      --id: #2c2a4a; --id-b: #9f97f0;
+      --dj: #33322d; --dj-b: #b4b2a9;
+      --sel: #4a3a1c; --sel-b: #e8a948;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  header { padding: 20px 20px 8px; max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; }
+  main { max-width: 960px; margin: 0 auto; padding: 12px 20px 40px; display: grid; gap: 20px; }
+  @media (min-width: 820px) { main { grid-template-columns: 1fr 340px; align-items: start; } }
+
+  .coffret { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; overflow-x: auto; }
+  .coffret h2 { font-size: 14px; font-weight: 600; margin: 0 0 14px; color: var(--muted); letter-spacing: .02em; }
+  .rangee { position: relative; display: flex; gap: 0; padding: 10px 0; min-width: max-content; }
+  .rangee::before { content: ""; position: absolute; left: -6px; right: -6px; top: 50%; height: 14px; transform: translateY(-50%); background: var(--rail); border-radius: 3px; opacity: .55; }
+
+  .module {
+    --w: 1; position: relative; width: calc(var(--w) * 54px); height: 150px;
+    border: 1.5px solid var(--dj-b); background: var(--dj); border-radius: 6px;
+    margin-right: 3px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    padding: 8px 4px; font: inherit; color: inherit; text-align: center; transition: transform .12s, box-shadow .12s;
+  }
+  .module:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+  .module:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .module.id { background: var(--id); border-color: var(--id-b); }
+  .module.active { background: var(--sel); border-color: var(--sel-b); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sel-b) 35%, transparent); }
+  .module .repere { font-weight: 700; font-size: 14px; }
+  .module .calibre { font-size: 12px; color: var(--muted); }
+  .module .manette { width: 22px; height: 34px; border-radius: 4px; background: var(--ink); opacity: .82; position: relative; }
+  .module .manette::after { content: ""; position: absolute; left: 4px; right: 4px; top: 4px; height: 10px; border-radius: 2px; background: var(--panel); }
+  .module.id .manette { width: 40px; }
+  .module .test { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--id-b); }
+  .module .etiquette { font-size: 11px; line-height: 1.2; color: var(--muted); max-width: 100%; overflow-wrap: anywhere; }
+
+  .legende { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .legende span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; border: 1.5px solid; }
+  .legende .l-id::before { background: var(--id); border-color: var(--id-b); }
+  .legende .l-dj::before { background: var(--dj); border-color: var(--dj-b); }
+
+  .fiche { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .fiche .vide { color: var(--muted); }
+  .fiche h3 { margin: 0 0 2px; font-size: 18px; }
+  .fiche .type { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+  .fiche dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 0 0 14px; }
+  .fiche dt { color: var(--muted); font-size: 13px; }
+  .fiche dd { margin: 0; font-size: 14px; }
+  .fiche h4 { font-size: 13px; color: var(--muted); margin: 14px 0 6px; font-weight: 600; }
+  .fiche ul { margin: 0; padding-left: 18px; }
+  .fiche li { margin-bottom: 3px; }
+  .fiche .note { background: var(--bg); border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-top: 12px; }
+  .fiche a { color: var(--accent); }
+  .chip { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); margin: 0 4px 4px 0; cursor: pointer; background: none; color: inherit; }
+  .chip:hover { border-color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Tableau électrique – rue des Acacias</h1>
+  <p>Exemple à 3 appareils. Clique sur un module pour voir sa fiche.</p>
+</header>
+
+<main>
+  <section class="coffret" aria-label="Tableau principal">
+    <h2>TABLEAU PRINCIPAL · RANGÉE 3 (extrait)</h2>
+    <div class="rangee" id="rangee"></div>
+    <div class="legende">
+      <span class="l-id">Interrupteur différentiel</span>
+      <span class="l-dj">Disjoncteur</span>
+    </div>
+  </section>
+
+  <aside class="fiche" id="fiche" aria-live="polite">
+    <p class="vide">Sélectionne un module dans le tableau.</p>
+  </aside>
+</main>
+
+<script>
+// Données du tableau : un objet par appareil, dans l'ordre sur le rail.
+// Pour ajouter un module, il suffit d'ajouter une entrée ici.
+const MODULES = [
+  {
+    id: "ID3",
+    type: "id",
+    nom: "Interrupteur différentiel ID3",
+    modules: 2,
+    calibre: "40 A",
+    reference: "Legrand 4 116 38",
+    caracteristiques: "DX³-ID 2P, 30 mA, type A, arrivée vis / départ automatique",
+    protege: ["E3"],
+    usage: "Protection différentielle des circuits d'éclairage (E1 à E5), volets roulants et VMC.",
+    remarques: "Type A conservé partout pour homogénéité. Alimente les disjoncteurs de sa rangée par le peigne HX³.",
+    lien: "https://www.legrand.fr/pro/catalogue"
+  },
+  {
+    id: "E3",
+    type: "dj",
+    nom: "Disjoncteur E3 – Éclairage cuisine",
+    modules: 1,
+    calibre: "10 A",
+    reference: "Legrand 4 067 82",
+    caracteristiques: "DNX³ 1P+N, courbe C, bornes automatiques",
+    section: "1,5 mm²",
+    amont: "ID3",
+    pieces: ["Cuisine"],
+    points: [
+      "Plafonnier cuisine 1",
+      "Plafonnier cuisine 2",
+      "Plafonnier cuisine 3",
+      "Éclairage sous meubles hauts (boîte en attente pour le driver LED)"
+    ],
+    usage: "Éclairage de la cuisine, câblé en étoile depuis le tableau (une ligne par point).",
+    remarques: "Un emplacement de télérupteur connecté est réservé par point d'éclairage, pour garder le choix entre télérupteur et lampe connectée."
+  },
+  {
+    id: "P3",
+    type: "dj",
+    nom: "Disjoncteur P3 – Prises plan de travail",
+    modules: 1,
+    calibre: "20 A",
+    reference: "Legrand 4 067 84",
+    caracteristiques: "DNX³ 1P+N, courbe C, bornes automatiques",
+    section: "2,5 mm² (gaine préfilée Ø 20 mm)",
+    amont: "ID2 (63 A type A)",
+    pieces: ["Cuisine"],
+    points: ["4 prises au plan de travail", "2 prises sur l'îlot"],
+    usage: "Prises de la cuisine au-dessus du plan de travail et sur l'îlot (6 prises maximum, NF C 15-100).",
+    remarques: "Exemple : dans le tableau réel, P3 est en rangée 2 sous l'ID2."
+  }
+];
+
+const rangee = document.getElementById("rangee");
+const fiche = document.getElementById("fiche");
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c])); }
+
+MODULES.forEach(m => {
+  const b = document.createElement("button");
+  b.className = "module " + m.type;
+  b.style.setProperty("--w", m.modules);
+  b.dataset.id = m.id;
+  b.setAttribute("aria-label", m.nom);
+  b.innerHTML =
+    `<span class="repere">${esc(m.id)}</span>` +
+    (m.type === "id" ? `<span class="test" title="Bouton test"></span>` : "") +
+    `<span class="manette"></span>` +
+    `<span class="calibre">${esc(m.calibre)}</span>` +
+    `<span class="etiquette">${esc(m.pieces ? m.pieces.join(", ") : "Diff. 30 mA")}</span>`;
+  b.addEventListener("click", () => afficher(m.id));
+  rangee.appendChild(b);
+});
+
+function afficher(id) {
+  const m = MODULES.find(x => x.id === id);
+  if (!m) return;
+  document.querySelectorAll(".module").forEach(el => el.classList.toggle("active", el.dataset.id === id));
+
+  const lignes = [
+    ["Calibre", m.calibre],
+    ["Référence", m.reference],
+    ["Appareil", m.caracteristiques],
+    ["Largeur", m.modules + (m.modules > 1 ? " modules" : " module")],
+    m.section && ["Section", m.section],
+    m.amont && ["Protégé par", m.amont],
+  ].filter(Boolean);
+
+  let html = `<h3>${esc(m.nom)}</h3><div class="type">${m.type === "id" ? "Interrupteur différentiel" : "Disjoncteur divisionnaire"}</div>`;
+  html += "<dl>" + lignes.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("") + "</dl>";
+  html += `<h4>Usage</h4><p style="margin:0">${esc(m.usage)}</p>`;
+  if (m.points) html += `<h4>Points desservis</h4><ul>${m.points.map(p => `<li>${esc(p)}</li>`).join("")}</ul>`;
+  if (m.protege) {
+    html += `<h4>Circuits en aval (dans cet exemple)</h4>` +
+      m.protege.map(p => `<button class="chip" data-go="${esc(p)}">${esc(p)}</button>`).join("");
+  }
+  if (m.remarques) html += `<div class="note">${esc(m.remarques)}</div>`;
+  fiche.innerHTML = html;
+  fiche.querySelectorAll("[data-go]").forEach(c => c.addEventListener("click", () => afficher(c.dataset.go)));
+  if (window.innerWidth < 820) fiche.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+</script>
+</body>
+</html>
