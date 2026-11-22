@@ -185,8 +185,9 @@ const E = {
     { ref: "Inclus dans le pack Legrand 0 570 03", appareil: "Disjoncteur Ph/N 20 A courbe C", section: "10 mm² (prêt pour 7,4 kW, avec alors un disjoncteur 40 A)",
       note: "Câble de 10 mm² raccordé directement sur la borne (bornes automatiques de 2,5 à 10 mm²)." }),
   MXVE: { kind: "mx", n: 1, rating: ["MX"], nom: "Déclencheur à émission (borne)", type: "Auxiliaire de commande",
-    ref: "Inclus dans le pack Legrand 0 570 03", appareil: "Accolé au disjoncteur de la borne",
-    usage: "Permet à la borne de couper son propre disjoncteur en cas de défaut." },
+    ref: "Inclus dans le pack Legrand 0 570 03", appareil: "Accolé au disjoncteur de la borne", feed: "DJVE", cmd: "ordre de la borne",
+    usage: "Permet à la borne de couper son propre disjoncteur en cas de défaut.",
+    note: "Bobine alimentée en sortie du disjoncteur VE ; l'ordre de déclenchement vient du contact de défaut de la borne (liaison en pointillés). Câblage exact selon la notice du pack 0 570 03." },
 
   TL19: tl("Sous meubles hauts", "E3"),
 
@@ -506,6 +507,24 @@ function dessiner(pk) {
     el("text", { x: x + w / 2, y: y + 58, "text-anchor": "middle", "font-size": 9, fill: "#55534d" }, g, "32 A · 6 mm²");
     srcN = { x: x + 34, y: y + h }; srcL = { x: x + 66, y: y + h };
   }
+
+  // Petites alimentations repiquées en sortie d'un disjoncteur (bornes du bas -> bornes du bas)
+  const parRangeeFeed = {};
+  P.rows.flatMap(r => r.items).filter(k => E[k].feed && pos[E[k].feed]).forEach(k => {
+    const src = pos[E[k].feed], dst = pos[k], ps = poles(src.x, src.n), pd = poles(dst.x, dst.n);
+    const j = parRangeeFeed[dst.top] = (parRangeeFeed[dst.top] ?? -1) + 1;
+    const yb = dst.top + H - 14, yN = dst.top + H + 44 + j * 12, yL = yN + 5;
+    const grp = hitGroup(k);
+    for (const [d, c] of [[`M${ps.N} ${yb}V${yN}H${pd.N}V${yb}`, BLEU], [`M${ps.L} ${yb}V${yL}H${pd.L}V${yb}`, ROUGE]]) {
+      el("path", { class: "wire-hit", d }, grp);
+      el("path", { class: "wire", d, stroke: c, "stroke-width": 2.2, fill: "none", "stroke-linejoin": "round", "stroke-linecap": "round" }, grp);
+    }
+    if (E[k].cmd) {
+      const d = `M${pd.N + 4} ${yb}V${yL + 22}M${pd.L - 4} ${yb}V${yL + 22}`;
+      el("path", { class: "wire", d, stroke: "#8a5a9e", "stroke-width": 1.8, fill: "none", "stroke-dasharray": "5 3" }, grp);
+      el("text", { x: pd.L + 4, y: yL + 20, "font-size": 9, fill: "#8a5a9e" }, grp, E[k].cmd);
+    }
+  });
 
   // Liaisons d'alimentation des têtes de groupe (arrivée en haut, à vis)
   const cibles = P.rows.flatMap(r => r.items).filter(k => E[k].kind === "id" || E[k].kind === "spd" || E[k].direct);
