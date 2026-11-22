@@ -207,8 +207,9 @@ const E = {
     note: "Déjà en ta possession : rien à acheter. Placé à côté du circuit VDI qui l'alimente, près du coffret réseau. Le Wi-Fi doit bien couvrir la GTL." },
   CT20: { kind: "ct", n: 1, rating: ["CT", "20A"], nom: "Contacteur connecté 20 A – Éclairage jardin", type: "Contacteur connecté multifonction silencieux 1P 20 AX",
     ref: "Legrand 4 121 71 (déjà possédé)", feed: "EEXT",
+    infos: [["Bornes de puissance", "L et N : alimentation depuis E-EXT ; Load : départ vers l'éclairage du jardin"], ["Bornes de commande", "C1 / C2 non utilisées (commande par l'App et la programmation)"], ["Sections", "Puissance 0,75 à 6 mm² (1 fil) ; commande 0,75 à 2,5 mm²"], ["Serrage", "1 N·m conseillé, dénudage 9 mm"], ["Notice", "Legrand F03037FR-08"]],
     usage: "Commande l'éclairage du jardin, à la place d'un télérupteur. Placé à côté du disjoncteur E-EXT qui l'alimente.",
-    note: "Déjà en ta possession. Allumage par l'App Home + Control et par programmation horaire ; pilotage par les commandes sans fil à vérifier dans la notice." },
+    note: "Déjà en ta possession. Le neutre ne doit jamais être câblé sur C1 ou C2. Protection en amont ≤ 20 A : le disjoncteur E-EXT 10 A convient. Pilotage par les commandes sans fil non décrit dans la notice : à tester à la mise en service." },
 
   /* ---------- Extérieur (rangée 4) ---------- */
   IDEXT: id(63, "ID-EXT – Circuits extérieurs", {
