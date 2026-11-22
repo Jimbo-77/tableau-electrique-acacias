@@ -193,7 +193,7 @@ const E = {
   /* ---------- Coffret 1 rangée : télérupteurs ---------- */
   TL1: tl("Séjour 1", "E1"), TL2: tl("Séjour 2", "E1"), TL3: tl("Séjour 3", "E1"),
   TL4: tl("Entrée", "E2"), TL5: tl("Dégagement", "E2"), TL6: tl("Escalier", "E2"), TL7: tl("WC", "E2"),
-  TL8: tl("Cellier", "E2"), TL9: tl("Façade (rue)", "EEXT"), TL10: tl("Jardin", "EEXT"),
+  TL8: tl("Cellier", "E2"), TL9: tl("Façade (rue)", "EEXT"),
   TL11: tl("Cuisine 1", "E3"), TL12: tl("Cuisine 2", "E3"), TL13: tl("Cuisine 3", "E3"),
   TL14: tl("Chambre 01", "E4"), TL15: tl("Bureau", "E4"),
   TL16: tl("Palier", "E5"), TL17: tl("Escalier étage", "E5"), TL18: tl("Salle d'eau", "E5"),
@@ -204,10 +204,10 @@ const E = {
     infos: [["Consommation", "2 W maximum"], ["Raccordement", "Bornes à vis"], ["Réseau", "Wi-Fi 2,4 GHz"]],
     usage: "Relie les télérupteurs, le contacteur et les commandes sans fil « with Netatmo » à l'App Home + Control (et à HomeKit).",
     note: "Déjà en ta possession : rien à acheter. Placé à côté du circuit VDI qui l'alimente, près du coffret réseau. Le Wi-Fi doit bien couvrir la GTL." },
-  CT20: { kind: "ct", n: 1, rating: ["CT", "20A"], nom: "Contacteur connecté 20 A (déjà possédé)", type: "Contacteur connecté multifonction silencieux 1P 20 AX",
-    ref: "Legrand 4 121 71 (déjà possédé)",
-    usage: "En réserve. Usage prévu par défaut : commande d'un éclairage, à la place d'un télérupteur. Pas sur la borne, qui est déjà connectée.",
-    note: "Déjà en ta possession. Il se câble en sortie du disjoncteur du circuit qu'il commande. Pilotage par les commandes sans fil à vérifier dans la notice avant de l'affecter à un point lumineux." },
+  CT20: { kind: "ct", n: 1, rating: ["CT", "20A"], nom: "Contacteur connecté 20 A – Éclairage jardin", type: "Contacteur connecté multifonction silencieux 1P 20 AX",
+    ref: "Legrand 4 121 71 (déjà possédé)", feed: "EEXT",
+    usage: "Commande l'éclairage du jardin, à la place d'un télérupteur. Placé à côté du disjoncteur E-EXT qui l'alimente.",
+    note: "Déjà en ta possession. Allumage par l'App Home + Control et par programmation horaire ; pilotage par les commandes sans fil à vérifier dans la notice." },
 
   /* ---------- Extérieur (rangée 4) ---------- */
   IDEXT: id(63, "ID-EXT – Circuits extérieurs", {
@@ -250,7 +250,7 @@ const PANELS = {
       { label: "Rangée 2", items: ["ID2", "P3", "S1", "S2", "S3", "S4", "S5", "ID4", "T1", "PAC1", "PAC2"] },
       { label: "Rangée 3", items: ["ID3", "E1", "E2", "E3", "E4", "E5", "VR", "VMC", "TDC", "IDVE", "DJVE", "MXVE"] },
       { label: "Rangée 4 · répartiteur, extérieur et réserve", items: ["REPART", "IDEXT", "EEXT", "PEXT", "CHALET", "CT20", "TL19"] },
-      { label: "Coffret 1 rangée · télérupteurs connectés", items: ["TL1","TL2","TL3","TL4","TL5","TL6","TL7","TL8","TL9","TL10","TL11","TL12","TL13","TL14","TL15","TL16","TL17","TL18"] }
+      { label: "Coffret 1 rangée · télérupteurs connectés", items: ["TL1","TL2","TL3","TL4","TL5","TL6","TL7","TL8","TL9","TL11","TL12","TL13","TL14","TL15","TL16","TL17","TL18"] }
     ]
   },
   combles: {
