@@ -327,6 +327,7 @@ function hitGroup(k) {
 }
 /* ===== Fils : chaque liaison dessinée a sa fiche (section, conducteur, extrémités) ===== */
 const SOUPLE = "Fil souple H07V-K, avec embouts de câblage";
+const RIGIDE = s => `Fil rigide ${s.startsWith("1,5") || s.startsWith("2,5") ? "H07V-U" : "H07V-R"} (pas d'embout)`;
 function fil(id, pk, nom, section, de, vers, extra = {}) {
   E[id] = Object.assign({ kind: "fil", nom, type: "Conducteur", section, amont: de, aval: vers ? [vers] : [],
     infos: [["Section", section]] }, extra);
@@ -418,9 +419,9 @@ function dessinerModule(k, x, top) {
   }
   if (m.kind === "spd") {
     const yb = top + H - 14;
-    const gt = fil("FIL-TERRE-SPD", "principal", "Terre du parafoudre", "6 mm² minimum (10 mm² conseillé)", k, null, {
+    const gt = fil("FIL-TERRE-SPD", "principal", "Terre du parafoudre", "6 mm²", k, null, {
       type: "Liaison vers le bornier de terre du tableau",
-      infos: [["Section", "6 mm² minimum (10 mm² conseillé)"], ["Conducteur", SOUPLE + ", vert/jaune"], ["Longueur", "La plus courte possible : phase + neutre + terre du parafoudre < 50 cm au total"]] });
+      infos: [["Section", "6 mm²"], ["Conducteur", RIGIDE("6") + ", vert/jaune"], ["Longueur", "La plus courte possible : phase + neutre + terre du parafoudre < 50 cm au total"]] });
     el("path", { class: "wire-hit", d: `M${cx} ${yb}V${yb + 26}` }, gt);
     el("path", { d: `M${cx} ${yb}V${yb + 26}`, stroke: VERT, "stroke-width": 3 }, gt);
     el("text", { x: cx + 5, y: yb + 30, "font-size": 8, fill: VERT }, gt, "terre");
@@ -533,7 +534,7 @@ function dessiner(pk) {
     const yb = dst.top + H - 14, yN = dst.top + H + 44 + j * 12, yL = yN + 5;
     const grp = fil("FIL-" + k, pk, "Alimentation de " + (LABEL[k] || k), "1,5 mm²", E[k].feed, k, {
       type: "Repiquage en sortie du disjoncteur " + (LABEL[E[k].feed] || E[k].feed),
-      infos: [["Section", "1,5 mm²"], ["Conducteur", SOUPLE], ["Protection", "Disjoncteur " + (LABEL[E[k].feed] || E[k].feed) + " " + E[E[k].feed].cal + " A"]] });
+      infos: [["Section", "1,5 mm²"], ["Conducteur", RIGIDE("1,5")], ["Protection", "Disjoncteur " + (LABEL[E[k].feed] || E[k].feed) + " " + E[E[k].feed].cal + " A"]] });
     for (const [d, c] of [[`M${ps.N} ${yb}V${yN}H${pd.N}V${yb}`, BLEU], [`M${ps.L} ${yb}V${yL}H${pd.L}V${yb}`, ROUGE]]) {
       el("path", { class: "wire-hit", d }, grp);
       el("path", { class: "wire", d, stroke: c, "stroke-width": 2.2, fill: "none", "stroke-linejoin": "round", "stroke-linecap": "round" }, grp);
@@ -580,7 +581,7 @@ function dessiner(pk) {
     const comb = pk !== "principal", sec = comb ? "6 mm²" : "10 mm²";
     const gf = fil("FIL-" + k, pk, (comb ? "Arrivée des combles" : "Répartiteur") + " → " + (LABEL[k] || k), sec, comb ? P.source : "REPART", k, {
       type: E[k].kind === "spd" ? "Alimentation du parafoudre" : E[k].direct ? "Alimentation d'un départ direct" : "Alimentation d'une tête de groupe",
-      infos: [["Section", sec], ["Conducteur", SOUPLE], ["Côté appareil", E[k].kind === "id" ? "Arrivée haute, bornes à vis" : "Bornes à vis"]],
+      infos: [["Section", sec], ["Conducteur", comb ? RIGIDE(sec) : SOUPLE], ["Côté appareil", E[k].kind === "id" ? "Arrivée haute, bornes à vis" : "Bornes à vis"]],
       note: E[k].kind === "spd" ? "Liaisons du parafoudre (phase, neutre, terre) < 50 cm au total : le parafoudre est placé au plus près du répartiteur."
         : comb ? "Même section que la ligne qui arrive de TD-C (32 A)." : "10 mm² : section des cordons de repiquage Legrand pour 63 A." });
     trace(gf, `${dp.pN}V${yN}H${a.N}V${yT}`, BLEU);
