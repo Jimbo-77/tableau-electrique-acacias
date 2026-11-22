@@ -179,11 +179,11 @@ const E = {
     section: "6 mm² (câble R2V si passage apparent)", usage: "Alimente le tableau secondaire des combles. Protège la liaison contre les surcharges et les courts-circuits.", avalDirect: ["ARRC"],
     note: "Pas de différentiel 30 mA en amont : les 30 mA sont dans le tableau des combles (ID-C1, ID-C2). Deux 30 mA en série ne sont pas sélectifs, un défaut dans les combles pourrait couper les deux. Alimenté directement par le répartiteur (d'où les bornes à vis)." }),
   DJVE: dj(20, "VE – Borne de recharge", ["Borne Green'up Home 3,7 kW (0 570 03) : prise Type 2 + prise renforcée"], {
-    direct: true, ref: "Fourni avec le pack Legrand 0 570 03", appareil: "Disjoncteur 1P+N 20 A courbe C, 4500 / 6 kA, 1 module",
+    direct: true, ref: "Legrand 4 067 75 (fourni avec la borne 0 570 03)", appareil: "DNX³ 1P+N 20 A courbe C, bornes à vis en arrivée et en sortie, 1 module",
     section: "10 mm² (prêt pour 7,4 kW, avec alors un disjoncteur 40 A et une autre borne)",
-    infos: [["Intégré à la borne", "Interrupteur différentiel 2P 25 A type A 30 mA, détection 6 mA DC, bobine à émission"], ["Réglage de la borne", "16 A en usine, non modifiable"]],
+    infos: [["Repère sur le schéma Legrand", "Q2"], ["Intégré à la borne", "Q1 : interrupteur différentiel 4 115 54 (bornes 1 × 10 mm² max) ; KM1 : bobine à émission 4 062 76, commandée par C1 / C2 ; détection 6 mA DC"], ["Réglage de la borne", "16 A en usine, non modifiable"]],
     usage: "Seul appareil de la borne à installer au tableau : il protège la ligne contre les surcharges et les courts-circuits.",
-    note: "Pas de différentiel 30 mA au tableau : il est dans la borne (guide installateur Legrand PRT224003). Alimenté directement par le répartiteur, comme TD-C. Vérifier le type de bornes du disjoncteur fourni : à vis, il se raccorde directement au fil souple 10 mm² du répartiteur." }),
+    note: "Pas de différentiel 30 mA au tableau : il est dans la borne (guide installateur Legrand PRT224003). Alimenté directement par le répartiteur, comme TD-C : ses bornes à vis reçoivent le fil souple 10 mm². Schéma de raccordement Legrand LE14647AA/08." }),
 
   TL19: tl("Sous meubles hauts", "E3"),
 
