@@ -136,7 +136,7 @@ const E = {
     usage: "Tête de toute l'installation. Il alimente la répartition du tableau principal." },
   REPART: { kind: "repart", n: 6, rating: ["RÉPART.", "100 A"], nom: "Répartiteur modulaire", type: "Répartiteur bipolaire à barreaux étagés, 100 A, 10 départs, 6 modules",
     ref: "Legrand 4 004 02",
-    infos: [["Arrivée", "6 à 16 mm² souple (10 à 25 mm² rigide)"], ["Départs", "1,5 à 10 mm² souple, bornes à vis"], ["Utilisés", "9 départs sur 9 (parafoudre, 7 interrupteurs différentiels, départ des combles TD-C)"]],
+    infos: [["Arrivée", "6 à 16 mm² souple (10 à 25 mm² rigide)"], ["Départs", "1,5 à 10 mm² souple, bornes à vis"], ["Utilisés", "9 départs sur 9 (parafoudre, 6 interrupteurs différentiels dont ID-EXT, départ des combles TD-C, disjoncteur de la borne)"]],
     usage: "Reçoit la phase et le neutre du disjoncteur de branchement et les redistribue en fil souple 10 mm² vers le parafoudre et l'arrivée (en haut, à vis) de chaque interrupteur différentiel.",
     note: "Préféré au peigne vertical VX³ (4 050 02) : celui-ci est limité à 12 kVA et n'alimente qu'un appareil par rangée, alors que les rangées 1 à 3 ont 2 ou 3 têtes de groupe. Les 9 départs sont utilisés : une nouvelle tête de groupe passera par un repiquage ou un second répartiteur." },
   SPD: { kind: "spd", n: 2, rating: ["SPD", "T2+T3"], nom: "Parafoudre", type: "Parafoudre type 2+3, 1P+N",
@@ -178,16 +178,12 @@ const E = {
   TDC: dj(32, "TD-C – Départ tableau des combles", [], { direct: true, ref: "Legrand 4 067 77", appareil: "DNX³ 1P+N, courbe C, bornes à vis en arrivée et en sortie",
     section: "6 mm² (câble R2V si passage apparent)", usage: "Alimente le tableau secondaire des combles. Protège la liaison contre les surcharges et les courts-circuits.", avalDirect: ["ARRC"],
     note: "Pas de différentiel 30 mA en amont : les 30 mA sont dans le tableau des combles (ID-C1, ID-C2). Deux 30 mA en série ne sont pas sélectifs, un défaut dans les combles pourrait couper les deux. Alimenté directement par le répartiteur (d'où les bornes à vis)." }),
-  IDVE: { kind: "id", n: 2, rating: ["ID", "30mA"], nom: "ID VE – Recharge véhicule", type: "Interrupteur différentiel (pack borne)",
-    ref: "Inclus dans le pack Legrand 0 570 03", appareil: "30 mA, type A ou F (fiche Legrand F04280FR-04)",
-    note: "Circuit de recharge dédié, avec son propre différentiel." },
-  DJVE: dj(20, "VE – Borne de recharge", ["Borne Green'up Home 3,7 kW (0 570 03) : prise Type 2 + prise renforcée"],
-    { ref: "Inclus dans le pack Legrand 0 570 03", appareil: "Disjoncteur Ph/N 20 A courbe C", section: "10 mm² (prêt pour 7,4 kW, avec alors un disjoncteur 40 A)",
-      note: "Câble de 10 mm² raccordé directement sur la borne (bornes automatiques de 2,5 à 10 mm²)." }),
-  MXVE: { kind: "mx", n: 1, rating: ["MX"], nom: "Déclencheur à émission (borne)", type: "Auxiliaire de commande",
-    ref: "Inclus dans le pack Legrand 0 570 03", appareil: "Accolé au disjoncteur de la borne", feed: "DJVE", cmd: "ordre de la borne",
-    usage: "Permet à la borne de couper son propre disjoncteur en cas de défaut.",
-    note: "Bobine alimentée en sortie du disjoncteur VE ; l'ordre de déclenchement vient du contact de défaut de la borne (liaison en pointillés). Câblage exact selon la notice du pack 0 570 03." },
+  DJVE: dj(20, "VE – Borne de recharge", ["Borne Green'up Home 3,7 kW (0 570 03) : prise Type 2 + prise renforcée"], {
+    direct: true, ref: "Fourni avec le pack Legrand 0 570 03", appareil: "Disjoncteur 1P+N 20 A courbe C, 4500 / 6 kA, 1 module",
+    section: "10 mm² (prêt pour 7,4 kW, avec alors un disjoncteur 40 A et une autre borne)",
+    infos: [["Intégré à la borne", "Interrupteur différentiel 2P 25 A type A 30 mA, détection 6 mA DC, bobine à émission"], ["Réglage de la borne", "16 A en usine, non modifiable"]],
+    usage: "Seul appareil de la borne à installer au tableau : il protège la ligne contre les surcharges et les courts-circuits.",
+    note: "Pas de différentiel 30 mA au tableau : il est dans la borne (guide installateur Legrand PRT224003). Alimenté directement par le répartiteur, comme TD-C. Vérifier le type de bornes du disjoncteur fourni : à vis, il se raccorde directement au fil souple 10 mm² du répartiteur." }),
 
   TL19: tl("Sous meubles hauts", "E3"),
 
@@ -239,7 +235,7 @@ const E = {
 };
 
 // Libellé court affiché sur l'étiquette de chaque appareil
-const LABEL = { MCTRL: "Module Control", CT20: "CT 20 A", IDEXT: "ID-EXT", EEXT: "E-EXT", PEXT: "P-EXT", CHALET: "CHAL.", PAC1: "PAC-1", PAC2: "PAC-2", TDC: "TD-C", IDVE: "ID VE", DJVE: "VE", MXVE: "MX",
+const LABEL = { MCTRL: "Module Control", CT20: "CT 20 A", IDEXT: "ID-EXT", EEXT: "E-EXT", PEXT: "P-EXT", CHALET: "CHAL.", PAC1: "PAC-1", PAC2: "PAC-2", TDC: "TD-C", DJVE: "VE",
   IDC1: "ID-C1", IDC2: "ID-C2", EC: "E-C", PC1: "P-C1", PC2: "P-C2", PSB: "P-SB", SSC: "SS-C" };
 
 const PANELS = {
@@ -250,7 +246,7 @@ const PANELS = {
     rows: [
       { label: "Rangée 1", items: ["SPD", "ID1", "P1", "P2", "P4", "VDI", "ID5", "P5", "P6", "P7", "SS", "MCTRL"] },
       { label: "Rangée 2", items: ["ID2", "P3", "S1", "S2", "S3", "S4", "S5", "ID4", "T1", "PAC1", "PAC2"] },
-      { label: "Rangée 3", items: ["ID3", "E1", "E2", "E3", "E4", "E5", "VR", "VMC", "TDC", "IDVE", "DJVE", "MXVE"] },
+      { label: "Rangée 3", items: ["ID3", "E1", "E2", "E3", "E4", "E5", "VR", "VMC", "TDC", "DJVE"] },
       { label: "Rangée 4 · répartiteur, extérieur et réserve", items: ["REPART", "IDEXT", "EEXT", "PEXT", "CHALET", "CT20", "TL19"] },
       { label: "Coffret 1 rangée · télérupteurs connectés", items: ["TL1","TL2","TL3","TL4","TL5","TL6","TL7","TL8","TL9","TL11","TL12","TL13","TL14","TL15","TL16","TL17","TL18"] }
     ]
@@ -304,7 +300,7 @@ E.REPART.aval = PANELS.principal.rows.flatMap(r => r.items).filter(k => E[k].kin
 E.ARRC.amont = "TDC";
 E.ARRC.aval = PANELS.combles.rows.flatMap(r => r.items).filter(k => E[k].kind === "id");
 E.TDC.aval = ["ARRC"];
-E.MXVE.amont = "DJVE";
+
 // Télérupteurs commandés par chaque circuit d'éclairage
 for (const [k, m] of Object.entries(E)) if (m.kind === "tl") (E[m.circuit].tls = E[m.circuit].tls || []).push(k);
 
