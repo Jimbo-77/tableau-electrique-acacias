@@ -325,6 +325,15 @@ function hitGroup(k) {
   g.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); afficher(k); } });
   return g;
 }
+/* ===== Fils : chaque liaison dessinée a sa fiche (section, conducteur, extrémités) ===== */
+const SOUPLE = "Fil souple H07V-K, avec embouts de câblage";
+function fil(id, pk, nom, section, de, vers, extra = {}) {
+  E[id] = Object.assign({ kind: "fil", nom, type: "Conducteur", section, amont: de, aval: vers ? [vers] : [],
+    infos: [["Section", section]] }, extra);
+  PANEL_OF[id] = pk;
+  return hitGroup(id);
+}
+
 function poles(x, n) { return n === 2 ? { N: x + U * 0.5, L: x + U * 1.5 } : { N: x + 10, L: x + U - 12 }; }
 // Interrupteur différentiel : arrivée à vis (module de gauche), départ automatique vers le peigne (module de droite)
 function polesID(x) { return { arrN: x + 9, arrL: x + 25, N: x + U + 9, L: x + U + 25 }; }
@@ -396,14 +405,25 @@ function dessinerModule(k, x, top) {
   el("text", { x: cx, y: top + 119.5, "text-anchor": "middle", "font-size": lab.length > 3 && n === 1 ? 7 : 8.5, "font-weight": 700, fill: "#2b2a27" }, g, lab);
   if (m.kind === "dj") {
     const p = poles(x, n), yb = top + H - 14;
-    el("path", { d: `M${p.N} ${yb}V${yb + 22}`, stroke: BLEU, "stroke-width": 2.5 }, g);
-    el("path", { d: `M${p.L} ${yb}V${yb + 22}`, stroke: ROUGE, "stroke-width": 2.5 }, g);
-    el("rect", { x: cx - 11, y: yb + 18, width: 22, height: 22, rx: 7, fill: "#9a9890", opacity: .85 }, g);
+    const sec = m.section || "—";
+    const ext = m.conducteur || (/^10 mm²/.test(sec) ? "Câble U-1000 R2V 3G10, sous gaine TPC à l'extérieur" : null) || (/R2V|câble/i.test(sec) ? "Câble U-1000 R2V (ou fil sous gaine selon le passage)" : /6 mm²/.test(sec) ? "Fil rigide H07V-R sous gaine ICTA Ø 25" : /2,5/.test(sec) ? "Gaine ICTA préfilée 3G2,5 (Ø 20)" : "Gaine ICTA préfilée 3G1,5 (Ø 16)");
+    const gd = fil("DEP-" + k, PANEL_OF[k], "Départ du circuit " + (LABEL[k] || k), sec, k, null, {
+      type: "Ligne du circuit, du disjoncteur aux points d'utilisation",
+      infos: [["Section", sec], ["Conducteur", ext], ["Couleurs", "Phase rouge (ou marron/noir), neutre bleu, terre vert/jaune"]],
+      points: m.points, note: m.reserve ? "Circuit en option : à poser seulement si le chalet est décidé." : null });
+    el("path", { class: "wire-hit", d: `M${p.N} ${yb}V${yb + 30}M${p.L} ${yb}V${yb + 30}` }, gd);
+    el("path", { d: `M${p.N} ${yb}V${yb + 22}`, stroke: BLEU, "stroke-width": 2.5 }, gd);
+    el("path", { d: `M${p.L} ${yb}V${yb + 22}`, stroke: ROUGE, "stroke-width": 2.5 }, gd);
+    el("rect", { x: cx - 11, y: yb + 18, width: 22, height: 22, rx: 7, fill: "#9a9890", opacity: .85 }, gd);
   }
   if (m.kind === "spd") {
     const yb = top + H - 14;
-    el("path", { d: `M${cx} ${yb}V${yb + 26}`, stroke: VERT, "stroke-width": 3 }, g);
-    el("text", { x: cx + 5, y: yb + 30, "font-size": 8, fill: VERT }, g, "terre");
+    const gt = fil("FIL-TERRE-SPD", "principal", "Terre du parafoudre", "6 mm² minimum (10 mm² conseillé)", k, null, {
+      type: "Liaison vers le bornier de terre du tableau",
+      infos: [["Section", "6 mm² minimum (10 mm² conseillé)"], ["Conducteur", SOUPLE + ", vert/jaune"], ["Longueur", "La plus courte possible : phase + neutre + terre du parafoudre < 50 cm au total"]] });
+    el("path", { class: "wire-hit", d: `M${cx} ${yb}V${yb + 26}` }, gt);
+    el("path", { d: `M${cx} ${yb}V${yb + 26}`, stroke: VERT, "stroke-width": 3 }, gt);
+    el("text", { x: cx + 5, y: yb + 30, "font-size": 8, fill: VERT }, gt, "terre");
   }
 }
 
@@ -511,7 +531,9 @@ function dessiner(pk) {
     const src = pos[E[k].feed], dst = pos[k], ps = poles(src.x, src.n), pd = poles(dst.x, dst.n);
     const j = parRangeeFeed[dst.top] = (parRangeeFeed[dst.top] ?? -1) + 1;
     const yb = dst.top + H - 14, yN = dst.top + H + 44 + j * 12, yL = yN + 5;
-    const grp = hitGroup(k);
+    const grp = fil("FIL-" + k, pk, "Alimentation de " + (LABEL[k] || k), "1,5 mm²", E[k].feed, k, {
+      type: "Repiquage en sortie du disjoncteur " + (LABEL[E[k].feed] || E[k].feed),
+      infos: [["Section", "1,5 mm²"], ["Conducteur", SOUPLE], ["Protection", "Disjoncteur " + (LABEL[E[k].feed] || E[k].feed) + " " + E[E[k].feed].cal + " A"]] });
     for (const [d, c] of [[`M${ps.N} ${yb}V${yN}H${pd.N}V${yb}`, BLEU], [`M${ps.L} ${yb}V${yL}H${pd.L}V${yb}`, ROUGE]]) {
       el("path", { class: "wire-hit", d }, grp);
       el("path", { class: "wire", d, stroke: c, "stroke-width": 2.2, fill: "none", "stroke-linejoin": "round", "stroke-linecap": "round" }, grp);
@@ -533,20 +555,21 @@ function dessiner(pk) {
   };
   const gutN = i => RAIL_X - 90 + i * 4, gutL = i => RAIL_X - 54 + i * 4;
   let depart;   // (i) -> { N: [x, y], L: [x, y], prefixN, prefixL }
-  let busG;
   if (pk === "principal") {
     const r = pos.REPART, yb = r.top + H - 14, base = r.top + H + 12;
-    busG = hitGroup("REPART");
     // disjoncteur Enedis -> arrivée du répartiteur (16 mm² ou 10 mm² selon l'abonnement)
     const arrN = r.x + 18, arrL = r.x + 48, yA = r.top + 15;
-    trace(g, `M${srcN.x} ${srcN.y}V${r.top - 10}H${arrN}V${yA}`, BLEU, 4.4);
-    trace(g, `M${srcL.x} ${srcL.y}V${r.top - 18}H${arrL}V${yA}`, ROUGE, 4.4);
+    const ga = fil("FIL-ARRIVEE", pk, "Disjoncteur de branchement → répartiteur", "16 mm²", "AGCP", "REPART", {
+      type: "Liaison d'alimentation du tableau",
+      infos: [["Section", "16 mm² (10 mm² admis jusqu'à 60 A, soit 12 kVA)"], ["Conducteur", SOUPLE + " (embouts 16 mm²)"], ["Bornes", "Arrivée du répartiteur : 6 à 16 mm² en souple"]],
+      note: "16 mm² couvre un abonnement jusqu'à 15 kVA. À confirmer avec le calibre réglé sur le disjoncteur Enedis." });
+    trace(ga, `M${srcN.x} ${srcN.y}V${r.top - 10}H${arrN}V${yA}`, BLEU, 4.4);
+    trace(ga, `M${srcL.x} ${srcL.y}V${r.top - 18}H${arrL}V${yA}`, ROUGE, 4.4);
     depart = i => {
       const d = repDepart(r.x, i);
       return { pN: `M${d.N} ${yb}V${base + i * 7}H${gutN(i)}`, pL: `M${d.L} ${yb}V${base + i * 7 + 3.5}H${gutL(i)}` };
     };
   } else {
-    busG = g;
     depart = i => ({ pN: `M${srcN.x} ${srcN.y}V${srcN.y + 20 + i * 8}H${gutN(i)}`, pL: `M${srcL.x} ${srcL.y}V${srcL.y + 24 + i * 8}H${gutL(i)}` });
   }
   cibles.forEach((k, i) => {
@@ -554,8 +577,14 @@ function dessiner(pk) {
     const j = parRangee[p.top] = (parRangee[p.top] ?? -1) + 1;
     const yN = p.top - 34 - j * 9, yL = p.top - 38 - j * 9;
     const dp = depart(i);
-    trace(busG, `${dp.pN}V${yN}H${a.N}V${yT}`, BLEU);
-    trace(busG, `${dp.pL}V${yL}H${a.L}V${yT}`, ROUGE);
+    const comb = pk !== "principal", sec = comb ? "6 mm²" : "10 mm²";
+    const gf = fil("FIL-" + k, pk, (comb ? "Arrivée des combles" : "Répartiteur") + " → " + (LABEL[k] || k), sec, comb ? P.source : "REPART", k, {
+      type: E[k].kind === "spd" ? "Alimentation du parafoudre" : E[k].direct ? "Alimentation d'un départ direct" : "Alimentation d'une tête de groupe",
+      infos: [["Section", sec], ["Conducteur", SOUPLE], ["Côté appareil", E[k].kind === "id" ? "Arrivée haute, bornes à vis" : "Bornes à vis"]],
+      note: E[k].kind === "spd" ? "Liaisons du parafoudre (phase, neutre, terre) < 50 cm au total : le parafoudre est placé au plus près du répartiteur."
+        : comb ? "Même section que la ligne qui arrive de TD-C (32 A)." : "10 mm² : section des cordons de repiquage Legrand pour 63 A." });
+    trace(gf, `${dp.pN}V${yN}H${a.N}V${yT}`, BLEU);
+    trace(gf, `${dp.pL}V${yL}H${a.L}V${yT}`, ROUGE);
   });
 }
 
@@ -603,15 +632,15 @@ function afficher(k) {
   if (m.cal && (m.kind === "dj" || m.kind === "id")) infos.push(["Calibre", m.cal + " A"]);
   if (m.ref) infos.push(["Référence", m.ref]);
   if (m.appareil) infos.push(["Appareil", m.appareil]);
-  if (m.n) infos.push(["Largeur", m.n + (m.n > 1 ? " modules" : " module")]);
-  if (m.section) infos.push(["Section", m.section]);
+  if (m.n && m.kind !== "fil") infos.push(["Largeur", m.n + (m.n > 1 ? " modules" : " module")]);
+  if (m.section && m.kind !== "fil") infos.push(["Section", m.section]);
   let html = `<h3>${esc(m.nom)}</h3><div class="type">${esc(m.type)}</div>`;
   if (infos.length) html += "<dl>" + infos.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("") + "</dl>";
   const usage = m.usage || (m.kind === "id" ? "Protection différentielle 30 mA des circuits qui le suivent sur le rail." : null);
   if (usage) html += `<h4>Rôle</h4><p style="margin:0">${esc(usage)}</p>`;
   if (m.points && m.points.length) html += `<h4>Points desservis</h4><ul>${m.points.map(p => `<li>${esc(p)}</li>`).join("")}</ul>`;
-  if (m.amont) html += `<h4>${m.kind === "tl" ? "Circuit commandé" : "Alimenté par"}</h4>${chips([m.amont])}`;
-  if (m.aval && m.aval.length) html += `<h4>Alimente</h4>${chips(m.aval)}`;
+  if (m.amont) html += `<h4>${m.kind === "tl" ? "Circuit commandé" : m.kind === "fil" ? "Départ" : "Alimenté par"}</h4>${chips([m.amont])}`;
+  if (m.aval && m.aval.length) html += `<h4>${m.kind === "fil" ? "Arrivée" : "Alimente"}</h4>${chips(m.aval)}`;
   if (m.kind === "id" && m.aval && E[m.aval[0]] && E[m.aval[0]].aval) html += `<h4>Circuits protégés</h4>${chips(E[m.aval[0]].aval)}`;
   if (m.tls) html += `<h4>Télérupteurs réservés</h4>${chips(m.tls)}`;
   if (m.note) html += `<div class="note">${esc(m.note)}</div>`;
