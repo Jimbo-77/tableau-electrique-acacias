@@ -136,7 +136,7 @@ const E = {
     usage: "Tête de toute l'installation. Il alimente la répartition du tableau principal." },
   REPART: { kind: "repart", n: 6, rating: ["RÉPART.", "100 A"], nom: "Répartiteur modulaire", type: "Répartiteur bipolaire à barreaux étagés, 100 A, 10 départs, 6 modules",
     ref: "Legrand 4 004 02",
-    infos: [["Arrivée", "6 à 16 mm² souple (10 à 25 mm² rigide)"], ["Départs", "1,5 à 10 mm² souple, bornes à vis"], ["Utilisés", "8 départs sur 9 (parafoudre, 5 interrupteurs différentiels, départ des combles TD-C, disjoncteur de la borne). ID-EXT est alimenté à travers le parafoudre"]],
+    infos: [["Arrivée", "6 à 16 mm² souple (10 à 25 mm² rigide)"], ["Départs", "1,5 à 10 mm² souple, bornes à vis"], ["Utilisés", "8 départs sur 9 (parafoudre, 5 interrupteurs différentiels, départ des combles TD-C, disjoncteur de la borne). ID-EXT est alimenté par peigne à travers le parafoudre"]],
     usage: "Reçoit la phase et le neutre du disjoncteur de branchement et les redistribue en fil souple 10 mm² vers le parafoudre et l'arrivée (en haut, à vis) de chaque interrupteur différentiel.",
     note: "Préféré au peigne vertical VX³ (4 050 02) : celui-ci est limité à 12 kVA et n'alimente qu'un appareil par rangée, alors que les rangées 1 à 3 ont 2 ou 3 têtes de groupe. 1 départ reste libre pour une évolution." },
   SPD: { kind: "spd", n: 2, rating: ["SPD", "T2+T3"], nom: "Parafoudre", type: "Parafoudre type 2+3, 1P+N",
@@ -438,7 +438,7 @@ function dessinerModule(k, x, top) {
     const yb = top + H - 14;
     const gt = fil("FIL-TERRE-SPD", "principal", "Terre du parafoudre", "6 mm²", k, null, {
       type: "Liaison vers le bornier de terre du tableau", aval: ["BT"],
-      infos: [["Section", "6 mm²"], ["Conducteur", RIGIDE("6") + ", vert/jaune"], ["Longueur", "La plus courte possible : phase + neutre + terre du parafoudre < 50 cm au total"]] });
+      infos: [["Section", "6 mm² minimum ; la notice Legrand F00359FR/04 cite aussi 25 mm² : à confirmer"], ["Conducteur", RIGIDE("6") + ", vert/jaune"], ["Longueur", "La plus courte possible : phase + neutre + terre du parafoudre < 50 cm au total"]] });
     el("path", { class: "wire-hit", d: `M${cx} ${yb}V${yb + 26}` }, gt);
     el("path", { d: `M${cx} ${yb}V${yb + 26}`, stroke: VERT, "stroke-width": 3 }, gt);
   }
@@ -652,12 +652,22 @@ function dessiner(pk) {
   // Appareils alimentés en traversant le parafoudre (arrivée haut / départ haut, 63 A max)
   P.rows.flatMap(r => r.items).filter(k => E[k].via && pos[E[k].via]).forEach(k => {
     const sp = pos[E[k].via], ps = poles(sp.x, sp.n), p = pos[k], a = arrivee(k, p), yT = p.top + 14;
-    const gv = fil("FIL-" + k, pk, "Parafoudre → " + (LABEL[k] || k), "10 mm²", E[k].via, k, {
-      type: "Alimentation par le départ haut du parafoudre",
-      infos: [["Section", "10 mm²"], ["Conducteur", SOUPLE], ["Côté appareil", "Arrivée haute, bornes à vis"], ["Limite", "63 A maximum à travers le parafoudre (IL du 0 039 51)"]],
-      note: "Câblage « en V » : le courant traverse les bornes du parafoudre, ce qui raccourcit ses liaisons et libère un départ du répartiteur." });
-    trace(gv, `M${ps.N + 5} ${sp.top + 14}V${sp.top - 18}H${a.N}V${yT}`, BLEU);
-    trace(gv, `M${ps.L + 5} ${sp.top + 14}V${sp.top - 24}H${a.L}V${yT}`, ROUGE);
+    // Raccordement « en série » : peigne aval jusqu'à 63 A (notice Legrand F00359FR/04, § 5.2.1)
+    const id = "PG-" + E[k].via + "-" + k;
+    E[id] = { kind: "peigne", nom: "Peigne parafoudre → " + (LABEL[k] || k), type: "Tronçon de peigne HX³ universel 1P+N",
+      ref: "Legrand 4 049 28, chute coupée sur 2 appareils", amont: E[k].via, aval: [k],
+      infos: [["Courant maximal", "63 A à travers le parafoudre"], ["Raccordement", "Départ haut du parafoudre → arrivée haute à vis de " + (LABEL[k] || k)]],
+      usage: "Alimente " + (LABEL[k] || k) + " à travers le parafoudre, sans câble : raccordement « en série », la meilleure protection (X = 0 m).",
+      note: "Prévu par la notice du parafoudre 0 039 51 (§ 5.2.1 : raccordement aval par peigne jusqu'à 63 A). À la pose, vérifier que ce tronçon et le peigne de départ de l'ID tiennent ensemble sur ses bornes du haut." };
+    PANEL_OF[id] = pk;
+    const gv = hitGroup(id), yb = sp.top - 26, x1 = ps.N - 8, x2 = a.L + 8;
+    el("rect", { class: "body", x: x1, y: yb, width: x2 - x1, height: 14, rx: 4, fill: "#b9b7b0", stroke: "#8f8d86" }, gv);
+    el("line", { x1: x1 + 4, x2: x2 - 4, y1: yb + 4.5, y2: yb + 4.5, stroke: BLEU, "stroke-width": 2.2 }, gv);
+    el("line", { x1: x1 + 4, x2: x2 - 4, y1: yb + 9.5, y2: yb + 9.5, stroke: ROUGE, "stroke-width": 2.2 }, gv);
+    for (const [xN, xL] of [[ps.N, ps.L], [a.N, a.L]]) {
+      el("rect", { x: xN - 2.5, y: yb + 12, width: 5, height: sp.top + 14 - yb - 12, fill: BLEU, rx: 1 }, gv);
+      el("rect", { x: xL - 2.5, y: yb + 12, width: 5, height: sp.top + 14 - yb - 12, fill: ROUGE, rx: 1 }, gv);
+    }
   });
   cibles.forEach((k, i) => {
     const p = pos[k], a = arrivee(k, p), yT = p.top + 14;
