@@ -355,7 +355,11 @@ function fil(id, pk, nom, section, de, vers, extra = {}) {
 function poles(x, n) { return n === 2 ? { N: x + U * 0.5, L: x + U * 1.5 } : { N: x + 10, L: x + U - 12 }; }
 // Interrupteur différentiel : arrivée à vis (module de gauche), départ automatique vers le peigne (module de droite)
 function polesID(x) { return { arrN: x + 9, arrL: x + 25, N: x + U + 9, L: x + U + 25 }; }
-function arrivee(k, p) { return E[k].kind === "id" ? (q => ({ N: q.arrN, L: q.arrL }))(polesID(p.x)) : poles(p.x, p.n); }
+function polesSPD(x) { return { arrN: x + 10, arrL: x + U + 10, N: x + 25, L: x + U + 25 }; }
+function arrivee(k, p) {
+  if (E[k].kind === "spd") { const q = polesSPD(p.x); return { N: q.arrN, L: q.arrL }; }
+  return E[k].kind === "id" ? (q => ({ N: q.arrN, L: q.arrL }))(polesID(p.x)) : poles(p.x, p.n);
+}
 
 function bornes(g, x, n, y, mode) {
   const p = poles(x, n);
@@ -382,6 +386,7 @@ function dessinerModule(k, x, top) {
     return;
   }
   if (m.kind === "repart") { dessinerRepart(g, k, x, top, w); return; }
+  if (m.kind === "spd") { dessinerSPD(g, k, x, top, w); terreSPD(k, cx, top); return; }
   if (m.reserve) {
     g.setAttribute("opacity", .55);
     el("rect", { x: x - 2, y: top - 2, width: w + 4, height: H + 4, rx: 5, fill: "none", stroke: "#6b6a64", "stroke-dasharray": "4 3" }, g);
@@ -434,7 +439,9 @@ function dessinerModule(k, x, top) {
     el("path", { d: `M${p.L} ${yb}V${yb + 22}`, stroke: ROUGE, "stroke-width": 2.5 }, gd);
     el("rect", { x: cx - 11, y: yb + 18, width: 22, height: 22, rx: 7, fill: "#9a9890", opacity: .85 }, gd);
   }
-  if (m.kind === "spd") {
+}
+function terreSPD(k, cx, top) {
+  {
     const yb = top + H - 14;
     const gt = fil("FIL-TERRE-SPD", "principal", "Terre du parafoudre", "6 mm²", k, null, {
       type: "Liaison vers le bornier de terre du tableau", aval: ["BT"],
@@ -444,8 +451,41 @@ function dessinerModule(k, x, top) {
   }
 }
 
+// Parafoudre 0 039 51 : double cage en haut (arrivée à vis + peigne aval), 2 cassettes débrochables, borne de terre en bas
+function dessinerSPD(g, k, x, top, w) {
+  const q = polesSPD(x), cx = x + w / 2;
+  el("rect", { class: "body", x, y: top, width: w, height: H, rx: 4, fill: "url(#gBody)", stroke: "#b9b6ad" }, g);
+  // bornes du haut
+  el("rect", { x: x + 2, y: top + 4, width: w - 4, height: 20, rx: 2, fill: "#dddbd4" }, g);
+  [[q.arrN, q.N, "N"], [q.arrL, q.L, "L"]].forEach(([xa, xp, lettre]) => {
+    el("rect", { x: xa - 7, y: top + 6, width: xp - xa + 14, height: 16, rx: 3, fill: "#cbc9c1", stroke: "#9a988f" }, g);
+    el("circle", { cx: xa, cy: top + 14, r: 5, fill: "#e2e0d9", stroke: "#85837c" }, g);
+    el("path", { d: `M${xa - 3} ${top + 14}H${xa + 3}M${xa} ${top + 11}V${top + 17}`, stroke: "#5c5b56", "stroke-width": 1.2 }, g);
+    el("rect", { x: xp - 3.5, y: top + 8, width: 7, height: 12, rx: 1.5, fill: "#3a3936" }, g);
+    el("text", { x: (xa + xp) / 2, y: top + 31, "text-anchor": "middle", "font-size": 7, "font-weight": 700, fill: lettre === "N" ? BLEU : ROUGE }, g, lettre);
+  });
+  // deux cassettes débrochables, avec voyant
+  for (let i = 0; i < 2; i++) {
+    const cxm = x + i * U + U / 2 - 1;
+    el("rect", { x: cxm - 15, y: top + 34, width: 30, height: 66, rx: 3, fill: "#5d5c57", stroke: "#3c3b37" }, g);
+    el("rect", { x: cxm - 12, y: top + 38, width: 24, height: 8, rx: 2, fill: "#7a7973" }, g);
+    el("rect", { x: cxm - 8, y: top + 54, width: 16, height: 12, rx: 2, fill: "#1f1e1c" }, g);
+    el("rect", { x: cxm - 6, y: top + 56, width: 12, height: 8, rx: 1.5, fill: "#4caf50" }, g);
+    el("text", { x: cxm, y: top + 82, "text-anchor": "middle", "font-size": 7, fill: "#e8e6df" }, g, "T2");
+    el("text", { x: cxm, y: top + 92, "text-anchor": "middle", "font-size": 6.5, fill: "#cfcdc6" }, g, "12 kA");
+  }
+  el("rect", { x: x + 3, y: top + 109, width: w - 6, height: 14, rx: 2, fill: "#fffef8", stroke: "#cfccc2" }, g);
+  el("text", { x: cx, y: top + 119.5, "text-anchor": "middle", "font-size": 8.5, "font-weight": 700, fill: "#2b2a27" }, g, "PARAFOUDRE");
+  // borne de terre
+  el("rect", { x: x + 2, y: top + H - 24, width: w - 4, height: 20, rx: 2, fill: "#e4e2dc" }, g);
+  el("circle", { cx, cy: top + H - 14, r: 6.5, fill: "#cfe3d2", stroke: VERT, "stroke-width": 1.6 }, g);
+  el("path", { d: `M${cx - 4} ${top + H - 14}H${cx + 4}M${cx} ${top + H - 18}V${top + H - 10}`, stroke: "#2a6e3b", "stroke-width": 1.3 }, g);
+  el("text", { x: cx + 11, y: top + H - 11, "font-size": 8, fill: VERT }, g, "⏚");
+}
+
 // Répartiteur : arrivée en haut à gauche, départs en bas (paires neutre / phase)
-const REP_PAIRES = 9;
+const REP_PAIRES = 8;
+function repDepartHaut(x, w) { return { N: x + w - 44, L: x + w - 18 }; }
 function repDepart(x, i) { return { N: x + 14 + i * 23, L: x + 24 + i * 23 }; }
 function dessinerRepart(g, k, x, top, w) {
   el("rect", { class: "body", x, y: top, width: w, height: H, rx: 4, fill: "url(#gBody)", stroke: "#b9b6ad" }, g);
@@ -456,6 +496,12 @@ function dessinerRepart(g, k, x, top, w) {
     el("path", { d: `M${cx - 4.5} ${top + 15}H${cx + 4.5}M${cx} ${top + 10.5}V${top + 19.5}`, stroke: "#4a4945", "stroke-width": 1.4 }, g);
   });
   el("text", { x: x + 72, y: top + 19, "font-size": 8, fill: "#6b6a64" }, g, "arrivée");
+  const dh = repDepartHaut(x, w);
+  el("rect", { x: dh.N - 12, y: top + 4, width: dh.L - dh.N + 24, height: 22, rx: 2, fill: "#dddbd4" }, g);
+  [[dh.N, BLEU], [dh.L, ROUGE]].forEach(([cx, c]) => {
+    el("circle", { cx, cy: top + 15, r: 5, fill: "#cfcdc6", stroke: c, "stroke-width": 1.4 }, g);
+    el("path", { d: `M${cx - 3} ${top + 15}H${cx + 3}`, stroke: "#4a4945", "stroke-width": 1.2 }, g);
+  });
   // barreaux étagés
   el("rect", { x: x + 8, y: top + 40, width: w - 16, height: 12, rx: 2, fill: "#5b8fe0", stroke: "#2e5fa8" }, g);
   el("rect", { x: x + 8, y: top + 58, width: w - 16, height: 12, rx: 2, fill: "#d9705f", stroke: "#a3392b" }, g);
@@ -649,9 +695,21 @@ function dessiner(pk) {
   } else {
     depart = i => ({ pN: `M${srcN.x} ${srcN.y}V${srcN.y + 20 + i * 8}H${gutN(i)}`, pL: `M${srcL.x} ${srcL.y}V${srcL.y + 24 + i * 8}H${gutL(i)}` });
   }
+  // Parafoudre : départ haut du répartiteur -> arrivée à vis du parafoudre (X le plus court)
+  const spdK = cibles.find(k => E[k].kind === "spd" && pk === "principal" && pos.REPART && pos[k].top === pos.REPART.top);
+  if (spdK) {
+    const r = pos.REPART, dh = repDepartHaut(r.x, 6 * U - 2), a = arrivee(spdK, pos[spdK]), t = r.top, yT = t + 14;
+    const gs = fil("FIL-" + spdK, pk, "Répartiteur → parafoudre", "10 mm²", "REPART", spdK, {
+      type: "Alimentation du parafoudre (raccordement en série)",
+      infos: [["Section", "10 mm² (notice : 6 mm² minimum)"], ["Conducteur", SOUPLE], ["Côté parafoudre", "Cage arrière à vis de la double borne du haut"], ["Longueur", "Quelques centimètres : le parafoudre est collé au répartiteur"]],
+      note: "Le peigne vers ID-EXT part de la cage avant des mêmes bornes. Liaisons du parafoudre (X + Z) < 50 cm." });
+    trace(gs, `M${dh.N} ${t + 15}V${t - 12}H${a.N}V${yT}`, BLEU);
+    trace(gs, `M${dh.L} ${t + 15}V${t - 36}H${a.L}V${yT}`, ROUGE);
+  }
+
   // Appareils alimentés en traversant le parafoudre (arrivée haut / départ haut, 63 A max)
   P.rows.flatMap(r => r.items).filter(k => E[k].via && pos[E[k].via]).forEach(k => {
-    const sp = pos[E[k].via], ps = poles(sp.x, sp.n), p = pos[k], a = arrivee(k, p), yT = p.top + 14;
+    const sp = pos[E[k].via], ps = E[E[k].via].kind === "spd" ? polesSPD(sp.x) : poles(sp.x, sp.n), p = pos[k], a = arrivee(k, p), yT = p.top + 14;
     // Raccordement « en série » : peigne aval jusqu'à 63 A (notice Legrand F00359FR/04, § 5.2.1)
     const id = "PG-" + E[k].via + "-" + k;
     E[id] = { kind: "peigne", nom: "Peigne parafoudre → " + (LABEL[k] || k), type: "Tronçon de peigne HX³ universel 1P+N",
@@ -669,7 +727,7 @@ function dessiner(pk) {
       el("rect", { x: xL - 2.5, y: yb + 12, width: 5, height: sp.top + 14 - yb - 12, fill: ROUGE, rx: 1 }, gv);
     }
   });
-  cibles.forEach((k, i) => {
+  cibles.filter(k => k !== spdK).forEach((k, i) => {
     const p = pos[k], a = arrivee(k, p), yT = p.top + 14;
     const j = parRangee[p.top] = (parRangee[p.top] ?? -1) + 1;
     const yN = p.top - 34 - j * 9, yL = p.top - 38 - j * 9;
