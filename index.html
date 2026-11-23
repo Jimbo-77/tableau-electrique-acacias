@@ -221,6 +221,22 @@ const E = {
     note: "Emplacement réservé. La gaine TPC Ø 63 avec tire-fil est posée pendant le terrassement ; câble et calibre se décident avec l'usage du chalet (éclairage et prises, ou chauffage)." }),
 
   /* ---------- Tableau des combles ---------- */
+  BT: { kind: "terre", nom: "Bornier de terre du tableau principal", type: "Borniers de répartition verts, 26 + 16 départs",
+    ref: "Legrand 4 048 39 + 0 048 35 (si non fournis avec le coffret)",
+    infos: [["Arrivée", "Liaison 16 mm² depuis la borne principale de terre (GTL)"], ["Départs", "Terres de tous les circuits et du parafoudre"]],
+    usage: "Réunit les conducteurs de protection (vert/jaune) de tous les circuits du tableau principal." },
+  BPT: { kind: "terre", nom: "Borne principale de terre (GTL)", type: "Bornier de terre vert, 16 départs",
+    ref: "Legrand 0 048 35",
+    infos: [["Raccordés", "Barrette de coupure, tableau principal (16 mm²), liaison équipotentielle principale (6 mm²), salles de bain (2,5 mm²)"]],
+    usage: "Point central de la terre de la maison, dans la GTL.", note: "Détail des longueurs et des prix dans l'onglet « Prise de terre » de la liste du matériel." },
+  BARR: { kind: "terre", nom: "Barrette de coupure de terre", type: "Barrette démontable 10 à 35 mm²",
+    ref: "Eurohm 70508 (chez Legrand : barrette à cosses 0 343 89, à confirmer)",
+    usage: "Se démonte pour isoler les piquets et mesurer la résistance de terre (100 ohms ou moins visés).",
+    note: "Côté piquets : câble cuivre nu 25 mm² enterré (16 mm² s'il est isolé et protégé). Deux piquets de 1,5 m espacés d'au moins 3 m." },
+  BTC: { kind: "terre", nom: "Bornier de terre du tableau des combles", type: "Bornier de répartition vert, 16 départs",
+    ref: "Legrand 0 048 35 (si non fourni avec le coffret)",
+    infos: [["Arrivée", "Conducteur vert/jaune 6 mm² de la ligne TD-C"]],
+    usage: "Réunit les conducteurs de protection des circuits des combles, dont la liaison équipotentielle de la salle de bain." },
   ARRC: { kind: "arr", nom: "Arrivée depuis le tableau principal", type: "Liaison TD-C",
     infos: [["Protection amont", "Disjoncteur TD-C 32 A, alimenté directement par le répartiteur"], ["Section", "6 mm²"]],
     usage: "Alimente les deux interrupteurs différentiels du tableau des combles." },
@@ -420,11 +436,11 @@ function dessinerModule(k, x, top) {
   if (m.kind === "spd") {
     const yb = top + H - 14;
     const gt = fil("FIL-TERRE-SPD", "principal", "Terre du parafoudre", "6 mm²", k, null, {
-      type: "Liaison vers le bornier de terre du tableau",
+      type: "Liaison vers le bornier de terre du tableau", aval: ["BT"],
       infos: [["Section", "6 mm²"], ["Conducteur", RIGIDE("6") + ", vert/jaune"], ["Longueur", "La plus courte possible : phase + neutre + terre du parafoudre < 50 cm au total"]] });
     el("path", { class: "wire-hit", d: `M${cx} ${yb}V${yb + 26}` }, gt);
     el("path", { d: `M${cx} ${yb}V${yb + 26}`, stroke: VERT, "stroke-width": 3 }, gt);
-    el("text", { x: cx + 5, y: yb + 30, "font-size": 8, fill: VERT }, gt, "terre");
+    el("text", { x: cx + 5, y: yb + 30, "font-size": 8, fill: VERT }, gt, "→ bornier de terre");
   }
 }
 
@@ -464,7 +480,7 @@ function dessiner(pk) {
   const P = PANELS[pk];
   svg.innerHTML = "";
   vbW = RAIL_X + P.modules * U + 40;
-  vbH = TOP + P.rows.length * PITCH - 40;
+  vbH = TOP + (P.rows.length - 1) * PITCH + H + 50 + (pk === "principal" ? 200 : 110);
   svg.setAttribute("viewBox", `0 0 ${vbW} ${vbH}`);
 
   const defs = el("defs");
@@ -524,6 +540,57 @@ function dessiner(pk) {
     el("text", { x: x + w / 2, y: y + 44, "text-anchor": "middle", "font-size": 9, fill: "#55534d" }, g, "depuis TD-C");
     el("text", { x: x + w / 2, y: y + 58, "text-anchor": "middle", "font-size": 9, fill: "#55534d" }, g, "32 A · 6 mm²");
     srcN = { x: x + 34, y: y + h }; srcL = { x: x + 66, y: y + h };
+  }
+
+  // Terre : bornier du tableau et, pour le tableau principal, borne principale et barrette de coupure
+  {
+    const y0 = TOP + (P.rows.length - 1) * PITCH + H + 50, principal = pk === "principal";
+    const nb = principal ? 42 : 16, pas = 14, bx = RAIL_X, bw = nb * pas + 24, by = y0 + 40;
+    const bk = principal ? "BT" : "BTC";
+    el("text", { x: bx, y: y0 + 22, "font-size": 11, "font-weight": 700, fill: "#5a5852" }, svg, "Terre");
+    const gb = hitGroup(bk);
+    el("rect", { class: "body", x: bx, y: by, width: bw, height: 26, rx: 4, fill: "#3f9a55", stroke: "#2a6e3b" }, gb);
+    el("rect", { x: bx + 6, y: by + 9, width: bw - 12, height: 8, rx: 2, fill: "#c9b458" }, gb);
+    for (let i = 0; i < nb; i++) {
+      const cx = bx + 12 + i * pas;
+      el("circle", { cx, cy: by + 13, r: 4.2, fill: "#d9d7cf", stroke: "#4a4945" }, gb);
+      el("path", { d: `M${cx - 2.6} ${by + 13}H${cx + 2.6}`, stroke: "#4a4945", "stroke-width": 1.1 }, gb);
+    }
+    el("text", { x: bx + bw / 2, y: by + 42, "text-anchor": "middle", "font-size": 9, fill: "#2a6e3b" }, gb,
+      principal ? "Bornier de terre 26 + 16 départs (4 048 39 + 0 048 35)" : "Bornier de terre 16 départs (0 048 35)");
+    const vj = (grp, d, w) => {
+      el("path", { class: "wire-hit", d }, grp);
+      el("path", { d, stroke: VERT, "stroke-width": w, fill: "none", "stroke-linejoin": "round" }, grp);
+      el("path", { d, stroke: "#e2c84a", "stroke-width": w, fill: "none", "stroke-dasharray": "6 6", "stroke-linejoin": "round" }, grp);
+    };
+    if (principal) {
+      // borne principale de terre et barrette de coupure, sous le disjoncteur Enedis
+      const gp = hitGroup("BPT"), px = 12, py = by - 4;
+      el("rect", { class: "body", x: px, y: py, width: 92, height: 34, rx: 4, fill: "#3f9a55", stroke: "#2a6e3b" }, gp);
+      el("text", { x: px + 46, y: py + 21, "text-anchor": "middle", "font-size": 8.5, "font-weight": 700, fill: "#fff" }, gp, "Borne princ. terre");
+      const gc = hitGroup("BARR"), cy = by + 70;
+      el("rect", { class: "body", x: px + 16, y: cy, width: 60, height: 26, rx: 4, fill: "#b9864a", stroke: "#7d5528" }, gc);
+      el("text", { x: px + 46, y: cy + 17, "text-anchor": "middle", "font-size": 8.5, "font-weight": 700, fill: "#fff" }, gc, "Barrette");
+      vj(fil("FIL-BT", pk, "Borne principale de terre → bornier du tableau", "16 mm²", "BPT", "BT", {
+        type: "Conducteur principal de protection", infos: [["Section", "16 mm²"], ["Conducteur", "H07V-K vert/jaune (10 mm² et plus : souple avec embouts)"]] }),
+        `M${px + 92} ${by + 13}H${bx}`, 4);
+      vj(fil("FIL-BARR", pk, "Barrette de coupure → borne principale de terre", "16 mm²", "BARR", "BPT", {
+        type: "Conducteur de terre", infos: [["Section", "16 mm²"], ["Conducteur", "Cuivre isolé vert/jaune"]] }),
+        `M${px + 46} ${cy}V${py + 34}`, 4);
+      const gpq = fil("FIL-PIQUETS", pk, "Piquets de terre → barrette de coupure", "25 mm² cuivre nu", null, "BARR", {
+        type: "Conducteur de terre enterré",
+        infos: [["Section", "25 mm² cuivre nu (16 mm² s'il est isolé et protégé)"], ["Piquets", "2 piquets de 1,5 m, espacés d'au moins 3 m"], ["Mesure visée", "100 ohms ou moins"]] });
+      const dq = `M${px + 46} ${cy + 26}V${cy + 58}`;
+      el("path", { class: "wire-hit", d: dq }, gpq);
+      el("path", { d: dq, stroke: "#b87333", "stroke-width": 4.5, fill: "none" }, gpq);
+      el("text", { x: px + 52, y: cy + 54, "font-size": 9, fill: "#7d5528" }, gpq, "vers piquets");
+    } else {
+      // terre de la ligne TD-C, depuis l'arrivée
+      vj(fil("FIL-BTC", pk, "Terre de la ligne TD-C → bornier des combles", "6 mm²", "ARRC", "BTC", {
+        type: "Conducteur de protection de la liaison",
+        infos: [["Section", "6 mm²"], ["Conducteur", "Vert/jaune du câble R2V 3G6 (ou fil rigide H07V-R sous gaine)"]] }),
+        `M${srcN.x - 14} ${srcN.y}V${by + 13}H${bx}`, 3);
+    }
   }
 
   // Petites alimentations repiquées en sortie d'un disjoncteur (bornes du bas -> bornes du bas)
