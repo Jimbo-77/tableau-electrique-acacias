@@ -57,6 +57,8 @@
   .fiche dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 0 0 6px; }
   .fiche dt { color: var(--muted); font-size: 13px; }
   .fiche dd { margin: 0; font-size: 14px; }
+  .fiche dd a { color: var(--accent, #1f6fd1); text-decoration: none; border-bottom: 1px solid currentColor; font-weight: 600; }
+  .fiche dd a:hover { opacity: .75; }
   .fiche h4 { font-size: 13px; color: var(--muted); margin: 14px 0 6px; font-weight: 600; }
   .fiche ul { margin: 0; padding-left: 18px; }
   .fiche li { margin-bottom: 3px; }
@@ -768,6 +770,31 @@ function ouvrir(pk) {
 function marquer(k) { svg.querySelectorAll(".hit").forEach(g => g.classList.toggle("active", g.dataset.id === k)); }
 
 const fiche = document.getElementById("fiche");
+const LEGRAND_URL = {
+  "4 067 82": "https://www.legrand.fr/pro/catalogue/disjoncteur-phaseneutre-dnx34500-6ka-arrivee-et-sortie-borne-automatique-1pn-230v-10a-courbe-c-1-module",
+  "4 067 83": "https://www.legrand.fr/pro/catalogue/disjoncteur-phaseneutre-dnx34500-6ka-arrivee-et-sortie-borne-automatique-1pn-230v-16a-courbe-c-1-module",
+  "4 067 84": "https://www.legrand.fr/pro/catalogue/disjoncteur-phaseneutre-dnx34500-6ka-arrivee-et-sortie-borne-automatique-1pn-230v-20a-courbe-c-1-module",
+  "4 067 87": "https://www.legrand.fr/pro/catalogue/disjoncteur-phase-neutre-dnx3-bornes-auto-32a-courbe-c-4500a6ka-1-module",
+  "4 067 75": "https://www.legrand.fr/pro/catalogue/disjoncteur-phaseneutre-dnx34500-6ka-arrivee-et-sortie-borne-a-vis-1pn-230v-20a-courbe-c-1-module",
+  "4 067 77": "https://www.legrand.fr/pro/catalogue/disjoncteur-phaseneutre-dnx34500-6ka-arrivee-et-sortie-borne-a-vis-1pn-230v-32a-courbe-c-1-module",
+  "4 116 38": "https://www.legrand.fr/pro/catalogue/31282-type-a/interrupteur-differentiel-dx3-id-arrivee-haut-a-vis-et-depart-haut-automatique-2p-230v-40a-typea-30ma-2-modules",
+  "4 116 51": "https://www.legrand.fr/pro/catalogue/interrupteur-differentiel-dx3-id-arrivee-haut-a-vis-et-depart-haut-automatique-2p-230v-63a-typea-30ma-2-modules",
+  "0 039 51": "https://www.legrand.fr/pro/catalogue/parafoudre-pour-protection-tableau-dabonne-avec-protection-integree-type2-imax-12kapole-1pn-2-modules",
+  "4 004 02": "https://www.legrand.fr/pro/catalogue/repartiteur-modulaire-a-barreaux-etages-bipolaire-100a-10-departs-6-modules",
+  "4 121 81": "https://www.legrand.fr/pro/catalogue/pack-de-demarrage-pour-installation-connectee-drivia-with-netatmo-module-control",
+  "4 121 70": "https://www.legrand.fr/pro/catalogue/telerupteur-connecte-drivia-with-netatmo-silencieux-1p-16ax-230v-1-module",
+  "4 121 71": "https://www.legrand.fr/pro/catalogue/contacteur-connecte-drivia-with-netatmo-multifonction-silencieux-1p-20ax-230v-1-module",
+  "4 049 28": "https://www.legrand.fr/pro/catalogue/peigne-dalimentation-universel-phase-neutre-hx3-horizontale-1p-longueur-18-modules",
+  "4 049 26": "https://www.legrand.fr/pro/catalogue/peigne-dalimentation-universel-phase-neutre-hx3-horizontale-1p-longueur-13-modules",
+  "4 048 39": "https://www.legrand.fr/pro/catalogue/bornier-de-repartition-isole-ip2x-terre-1-connexion-6mm2-a-25mm2-vert-longueur-227mm",
+  "0 048 35": "https://www.legrand.fr/pro/catalogue/bornier-de-repartition-isole-ip2x-terre-1-connexion-6mm2-a-25mm2-vert-longueur-141mm",
+  "0 570 03": "https://www.legrand.fr/pro/catalogue/borne-de-recharge-greenup-home-monophasee-ac-37kw-mode-2-mode-3-avec-inter-diff-et-declencheur-a-emission-disjoncteur-phn",
+};
+// Références Legrand cliquables vers la fiche produit legrand.fr
+function lienRef(txt) {
+  return esc(txt).replace(/\b\d \d{3} \d{2}\b/g, r => LEGRAND_URL[r]
+    ? `<a href="${LEGRAND_URL[r]}" target="_blank" rel="noopener" title="Fiche produit sur legrand.fr">${r} ↗</a>` : r);
+}
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 function chips(list) { return list.filter(k => E[k]).map(k => `<button class="chip" data-go="${k}">${esc(E[k].nom)}</button>`).join(""); }
 
@@ -786,7 +813,7 @@ function afficher(k) {
   if (m.n && m.kind !== "fil") infos.push(["Largeur", m.n + (m.n > 1 ? " modules" : " module")]);
   if (m.section && m.kind !== "fil") infos.push(["Section", m.section]);
   let html = `<h3>${esc(m.nom)}</h3><div class="type">${esc(m.type)}</div>`;
-  if (infos.length) html += "<dl>" + infos.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join("") + "</dl>";
+  if (infos.length) html += "<dl>" + infos.map(([a, b]) => `<dt>${esc(a)}</dt><dd>${a === "Référence" ? lienRef(b) : esc(b)}</dd>`).join("") + "</dl>";
   const usage = m.usage || (m.kind === "id" ? "Protection différentielle 30 mA des circuits qui le suivent sur le rail." : null);
   if (usage) html += `<h4>Rôle</h4><p style="margin:0">${esc(usage)}</p>`;
   if (m.points && m.points.length) html += `<h4>Points desservis</h4><ul>${m.points.map(p => `<li>${esc(p)}</li>`).join("")}</ul>`;
