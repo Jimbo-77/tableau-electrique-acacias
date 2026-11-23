@@ -355,7 +355,16 @@ function fil(id, pk, nom, section, de, vers, extra = {}) {
 function poles(x, n) { return n === 2 ? { N: x + U * 0.5, L: x + U * 1.5 } : { N: x + 10, L: x + U - 12 }; }
 // Interrupteur différentiel : arrivée à vis (module de gauche), départ automatique vers le peigne (module de droite)
 function polesID(x) { return { arrN: x + 9, arrL: x + 25, N: x + U + 9, L: x + U + 25 }; }
-function polesSPD(x) { return { arrN: x + 10, arrL: x + U + 10, N: x + 25, L: x + U + 25 }; }
+function dessinerPeigne(grp, x1, x2, top, dentsN, dentsL) {
+  const yN = top - 30, yL = top - 20, h = 8;
+  el("rect", { class: "body", x: x1, y: yN, width: x2 - x1 - 8, height: h, rx: 2, fill: "#d9d7d0", stroke: "#8f8d86" }, grp);
+  el("rect", { x: x1 + 3, y: yN + 2.5, width: x2 - x1 - 14, height: 3, rx: 1.5, fill: BLEU }, grp);
+  el("rect", { class: "body", x: x1 + 8, y: yL, width: x2 - x1 - 8, height: h, rx: 2, fill: "#d9d7d0", stroke: "#8f8d86" }, grp);
+  el("rect", { x: x1 + 11, y: yL + 2.5, width: x2 - x1 - 14, height: 3, rx: 1.5, fill: ROUGE }, grp);
+  dentsN.forEach(xd => el("rect", { x: xd - 2, y: yN + h, width: 4, height: top + 10 - yN - h, fill: "#7d7b74", rx: 1 }, grp));
+  dentsL.forEach(xd => el("rect", { x: xd - 2, y: yL + h, width: 4, height: top + 10 - yL - h, fill: "#7d7b74", rx: 1 }, grp));
+}
+function polesSPD(x) { return { arrN: x + 9, arrL: x + 25, N: x + U + 9, L: x + U + 25 }; }
 function arrivee(k, p) {
   if (E[k].kind === "spd") { const q = polesSPD(p.x); return { N: q.arrN, L: q.arrL }; }
   return E[k].kind === "id" ? (q => ({ N: q.arrN, L: q.arrL }))(polesID(p.x)) : poles(p.x, p.n);
@@ -386,7 +395,7 @@ function dessinerModule(k, x, top) {
     return;
   }
   if (m.kind === "repart") { dessinerRepart(g, k, x, top, w); return; }
-  if (m.kind === "spd") { dessinerSPD(g, k, x, top, w); terreSPD(k, cx, top); return; }
+  if (m.kind === "spd") { dessinerSPD(g, k, x, top, w); terreSPD(k, cx + 16, top); return; }
   if (m.reserve) {
     g.setAttribute("opacity", .55);
     el("rect", { x: x - 2, y: top - 2, width: w + 4, height: H + 4, rx: 5, fill: "none", stroke: "#6b6a64", "stroke-dasharray": "4 3" }, g);
@@ -454,33 +463,32 @@ function terreSPD(k, cx, top) {
 // Parafoudre 0 039 51 : double cage en haut (arrivée à vis + peigne aval), 2 cassettes débrochables, borne de terre en bas
 function dessinerSPD(g, k, x, top, w) {
   const q = polesSPD(x), cx = x + w / 2;
-  el("rect", { class: "body", x, y: top, width: w, height: H, rx: 4, fill: "url(#gBody)", stroke: "#b9b6ad" }, g);
-  // bornes du haut
-  el("rect", { x: x + 2, y: top + 4, width: w - 4, height: 20, rx: 2, fill: "#dddbd4" }, g);
-  [[q.arrN, q.N, "N"], [q.arrL, q.L, "L"]].forEach(([xa, xp, lettre]) => {
-    el("rect", { x: xa - 7, y: top + 6, width: xp - xa + 14, height: 16, rx: 3, fill: "#cbc9c1", stroke: "#9a988f" }, g);
-    el("circle", { cx: xa, cy: top + 14, r: 5, fill: "#e2e0d9", stroke: "#85837c" }, g);
-    el("path", { d: `M${xa - 3} ${top + 14}H${xa + 3}M${xa} ${top + 11}V${top + 17}`, stroke: "#5c5b56", "stroke-width": 1.2 }, g);
-    el("rect", { x: xp - 3.5, y: top + 8, width: 7, height: 12, rx: 1.5, fill: "#3a3936" }, g);
-    el("text", { x: (xa + xp) / 2, y: top + 31, "text-anchor": "middle", "font-size": 7, "font-weight": 700, fill: lettre === "N" ? BLEU : ROUGE }, g, lettre);
+  el("rect", { class: "body", x, y: top, width: w, height: H, rx: 4, fill: "url(#gBody)", stroke: "#4a4945", "stroke-width": 1.6 }, g);
+  // bornes du haut : N L (arrivée, à vis) reliées en interne à N L (départ peigne)
+  el("rect", { x: x + 2, y: top + 3, width: w - 4, height: 30, rx: 2, fill: "#eceae4", stroke: "#bdbab1" }, g);
+  el("path", { d: `M${q.arrN} ${top + 6}V${top + 4}H${q.N}V${top + 6}M${q.arrL} ${top + 24}V${top + 27}H${q.L}V${top + 24}`, stroke: "#6b6a64", "stroke-width": 1.2, fill: "none" }, g);
+  [[q.arrN, "N"], [q.arrL, "L"], [q.N, ""], [q.L, ""]].forEach(([xb, t]) => {
+    el("circle", { cx: xb, cy: top + 15, r: 6, fill: "#f4f3ef", stroke: "#3a3936", "stroke-width": 1.3 }, g);
+    el("path", { d: `M${xb - 3.5} ${top + 11.5}L${xb + 3.5} ${top + 18.5}M${xb + 3.5} ${top + 11.5}L${xb - 3.5} ${top + 18.5}`, stroke: "#3a3936", "stroke-width": 1.2 }, g);
+    if (t) el("text", { x: xb, y: top + 31, "text-anchor": "middle", "font-size": 7, "font-weight": 700, fill: t === "N" ? BLEU : ROUGE }, g, t);
   });
-  // deux cassettes débrochables, avec voyant
-  for (let i = 0; i < 2; i++) {
-    const cxm = x + i * U + U / 2 - 1;
-    el("rect", { x: cxm - 15, y: top + 34, width: 30, height: 66, rx: 3, fill: "#5d5c57", stroke: "#3c3b37" }, g);
-    el("rect", { x: cxm - 12, y: top + 38, width: 24, height: 8, rx: 2, fill: "#7a7973" }, g);
-    el("rect", { x: cxm - 8, y: top + 54, width: 16, height: 12, rx: 2, fill: "#1f1e1c" }, g);
-    el("rect", { x: cxm - 6, y: top + 56, width: 12, height: 8, rx: 1.5, fill: "#4caf50" }, g);
-    el("text", { x: cxm, y: top + 82, "text-anchor": "middle", "font-size": 7, fill: "#e8e6df" }, g, "T2");
-    el("text", { x: cxm, y: top + 92, "text-anchor": "middle", "font-size": 6.5, fill: "#cfcdc6" }, g, "12 kA");
-  }
+  // face avant : cassettes, voyants et bandeau
+  el("rect", { x: x + 3, y: top + 36, width: w - 6, height: 22, rx: 2, fill: "#f6f5f1", stroke: "#bdbab1" }, g);
+  el("rect", { x: cx - 6, y: top + 56, width: 12, height: 4, rx: 1, fill: "#bdbab1" }, g);
+  el("rect", { x: x + 3, y: top + 62, width: w - 6, height: 44, rx: 2, fill: "#f6f5f1", stroke: "#3a3936" }, g);
+  [cx + 6, cx + 20].forEach(c => {
+    el("circle", { cx: c, cy: top + 74, r: 5, fill: "#4caf50", stroke: "#2a6e3b" }, g);
+  });
+  el("text", { x: x + 8, y: top + 78, "font-size": 7, fill: "#55534d" }, g, "T2+T3");
+  el("rect", { x: x + 6, y: top + 92, width: w - 12, height: 2, fill: "#d03a2c" }, g);
   el("rect", { x: x + 3, y: top + 109, width: w - 6, height: 14, rx: 2, fill: "#fffef8", stroke: "#cfccc2" }, g);
   el("text", { x: cx, y: top + 119.5, "text-anchor": "middle", "font-size": 8.5, "font-weight": 700, fill: "#2b2a27" }, g, "PARAFOUDRE");
-  // borne de terre
-  el("rect", { x: x + 2, y: top + H - 24, width: w - 4, height: 20, rx: 2, fill: "#e4e2dc" }, g);
-  el("circle", { cx, cy: top + H - 14, r: 6.5, fill: "#cfe3d2", stroke: VERT, "stroke-width": 1.6 }, g);
-  el("path", { d: `M${cx - 4} ${top + H - 14}H${cx + 4}M${cx} ${top + H - 18}V${top + H - 10}`, stroke: "#2a6e3b", "stroke-width": 1.3 }, g);
-  el("text", { x: cx + 11, y: top + H - 11, "font-size": 8, fill: VERT }, g, "⏚");
+  // bas : fenêtre + borne de terre
+  el("rect", { x: x + 2, y: top + H - 26, width: w - 4, height: 24, rx: 2, fill: "#eceae4", stroke: "#bdbab1" }, g);
+  el("rect", { x: x + 6, y: top + H - 23, width: 30, height: 17, rx: 3, fill: "#fff", stroke: "#6b6a64" }, g);
+  el("circle", { cx: cx + 16, cy: top + H - 14, r: 6, fill: "#f4f3ef", stroke: VERT, "stroke-width": 1.6 }, g);
+  el("path", { d: `M${cx + 12.5} ${top + H - 17.5}L${cx + 19.5} ${top + H - 10.5}M${cx + 19.5} ${top + H - 17.5}L${cx + 12.5} ${top + H - 10.5}`, stroke: "#2a6e3b", "stroke-width": 1.2 }, g);
+  el("text", { x: cx + 26, y: top + H - 20, "font-size": 8, fill: VERT }, g, "⏚");
 }
 
 // Répartiteur : arrivée en haut à gauche, départs en bas (paires neutre / phase)
@@ -550,15 +558,9 @@ function dessiner(pk) {
 
     r.groupes.forEach(gp => {
       const g = hitGroup(gp.id), first = pos[gp.members[0]], last = pos[gp.members.at(-1)];
-      const x1 = E[gp.members[0]].kind === "id" ? first.x + U + 2 : first.x + 4, x2 = last.x + last.n * U - 8, yb = top - 26;
-      el("rect", { class: "body", x: x1, y: yb, width: x2 - x1, height: 14, rx: 4, fill: "#b9b7b0", stroke: "#8f8d86" }, g);
-      el("line", { x1: x1 + 4, x2: x2 - 4, y1: yb + 4.5, y2: yb + 4.5, stroke: BLEU, "stroke-width": 2.2 }, g);
-      el("line", { x1: x1 + 4, x2: x2 - 4, y1: yb + 9.5, y2: yb + 9.5, stroke: ROUGE, "stroke-width": 2.2 }, g);
-      gp.members.forEach(k => {
-        const p = E[k].kind === "id" ? polesID(pos[k].x) : poles(pos[k].x, pos[k].n);
-        el("rect", { x: p.N - 2.5, y: yb + 12, width: 5, height: top + 14 - yb - 12, fill: BLEU, rx: 1 }, g);
-        el("rect", { x: p.L - 2.5, y: yb + 12, width: 5, height: top + 14 - yb - 12, fill: ROUGE, rx: 1 }, g);
-      });
+      const x1 = E[gp.members[0]].kind === "id" ? first.x + U + 2 : first.x + 4, x2 = last.x + last.n * U - 2;
+      const ps = gp.members.map(k => E[k].kind === "id" ? polesID(pos[k].x) : poles(pos[k].x, pos[k].n));
+      dessinerPeigne(g, x1, x2, top, ps.map(p => p.N), ps.map(p => p.L));
     });
   });
 
@@ -628,7 +630,7 @@ function dessiner(pk) {
         infos: [["Section", "25 mm² cuivre nu (16 mm² s'il est isolé et protégé)"], ["Piquets", "2 piquets de 1,5 m, espacés d'au moins 3 m"], ["Mesure visée", "100 ohms ou moins"]] });
       // terre du parafoudre jusqu'au bornier
       if (pos.SPD) {
-        const sp = pos.SPD, scx = sp.x + sp.n * U / 2, syb = sp.top + H - 14 + 26, yh = sp.top + H + 76, xg = RAIL_X - 100, sx = bx + 12;
+        const sp = pos.SPD, scx = sp.x + (sp.n * U - 2) / 2 + 16, syb = sp.top + H - 14 + 26, yh = sp.top + H + 76, xg = RAIL_X - 100, sx = bx + 12;
         const d = `M${scx} ${syb}V${yh}H${xg}V${by - 14}H${sx}V${by + 9}`;
         const gt = hitGroup("FIL-TERRE-SPD");
         el("path", { class: "wire-hit", d }, gt);
@@ -718,14 +720,8 @@ function dessiner(pk) {
       usage: "Alimente " + (LABEL[k] || k) + " à travers le parafoudre, sans câble : raccordement « en série », la meilleure protection (X = 0 m).",
       note: "Prévu par la notice du parafoudre 0 039 51 (§ 5.2.1 : raccordement aval par peigne jusqu'à 63 A). À la pose, vérifier que ce tronçon et le peigne de départ de l'ID tiennent ensemble sur ses bornes du haut." };
     PANEL_OF[id] = pk;
-    const gv = hitGroup(id), yb = sp.top - 26, x1 = ps.N - 8, x2 = a.L + 8;
-    el("rect", { class: "body", x: x1, y: yb, width: x2 - x1, height: 14, rx: 4, fill: "#b9b7b0", stroke: "#8f8d86" }, gv);
-    el("line", { x1: x1 + 4, x2: x2 - 4, y1: yb + 4.5, y2: yb + 4.5, stroke: BLEU, "stroke-width": 2.2 }, gv);
-    el("line", { x1: x1 + 4, x2: x2 - 4, y1: yb + 9.5, y2: yb + 9.5, stroke: ROUGE, "stroke-width": 2.2 }, gv);
-    for (const [xN, xL] of [[ps.N, ps.L], [a.N, a.L]]) {
-      el("rect", { x: xN - 2.5, y: yb + 12, width: 5, height: sp.top + 14 - yb - 12, fill: BLEU, rx: 1 }, gv);
-      el("rect", { x: xL - 2.5, y: yb + 12, width: 5, height: sp.top + 14 - yb - 12, fill: ROUGE, rx: 1 }, gv);
-    }
+    const gv = hitGroup(id);
+    dessinerPeigne(gv, ps.N - 7, a.L + 9, sp.top, [ps.N, a.N], [ps.L, a.L]);
   });
   cibles.filter(k => k !== spdK).forEach((k, i) => {
     const p = pos[k], a = arrivee(k, p), yT = p.top + 14;
