@@ -185,7 +185,7 @@ const E = {
     section: "10 mm² (prêt pour 7,4 kW, avec alors un disjoncteur 40 A et une autre borne)",
     infos: [["Repère sur le schéma Legrand", "Q2"], ["Intégré à la borne", "Q1 : interrupteur différentiel 4 115 54 (bornes 1 × 10 mm² max) ; KM1 : bobine à émission 4 062 76, commandée par C1 / C2 ; détection 6 mA DC"], ["Réglage de la borne", "16 A en usine, non modifiable"]],
     usage: "Seul appareil de la borne à installer au tableau : il protège la ligne contre les surcharges et les courts-circuits.",
-    note: "Pas de différentiel 30 mA au tableau : il est dans la borne (guide installateur Legrand PRT224003). Alimenté directement par le répartiteur, comme TD-C : ses bornes à vis reçoivent le fil souple 10 mm². Schéma de raccordement Legrand LE14647AA/08." }),
+    note: "Pas de différentiel 30 mA au tableau : il est dans la borne (guide installateur Legrand PRT224003). Placé en rangée 4 avec TD-C, à côté du répartiteur qui les alimente directement : ses bornes à vis reçoivent le fil souple 10 mm². Schéma de raccordement Legrand LE14647AA/08." }),
 
   TL19: tl("Sous meubles hauts", "E3"),
 
@@ -264,8 +264,8 @@ const PANELS = {
     rows: [
       { label: "Rangée 1", items: ["ID1", "P1", "P2", "P4", "VDI", "ID5", "P5", "P6", "P7", "SS", "MCTRL"] },
       { label: "Rangée 2", items: ["ID2", "P3", "S1", "S2", "S3", "S4", "S5", "ID4", "T1", "PAC1", "PAC2"] },
-      { label: "Rangée 3", items: ["ID3", "E1", "E2", "E3", "E4", "E5", "VR", "VMC", "TDC", "DJVE"] },
-      { label: "Rangée 4 · répartiteur, extérieur et réserve", items: ["REPART", "SPD", "IDEXT", "EEXT", "PEXT", "CHALET", "CT20", "TL19"] },
+      { label: "Rangée 3", items: ["ID3", "E1", "E2", "E3", "E4", "E5", "VR", "VMC", "TL19"] },
+      { label: "Rangée 4 · répartiteur, départs directs et extérieur", items: ["REPART", "SPD", "IDEXT", "EEXT", "PEXT", "CHALET", "CT20", "TDC", "DJVE"] },
       { label: "Coffret 1 rangée · télérupteurs connectés", items: ["TL1","TL2","TL3","TL4","TL5","TL6","TL7","TL8","TL9","TL11","TL12","TL13","TL14","TL15","TL16","TL17","TL18"] }
     ]
   },
@@ -725,11 +725,33 @@ function dessiner(pk) {
     const gv = hitGroup(id);
     dessinerPeigne(gv, ps.N - 7, a.L + 9, sp.top, [ps.N, a.N], [ps.L, a.L]);
   });
-  cibles.filter(k => k !== spdK).forEach((k, i) => {
+  // Départs directs placés sur la rangée du répartiteur : passage sous la rangée puis par les emplacements libres de droite
+  const directsRangee = pk === "principal" && pos.REPART ? cibles.filter(k => E[k].direct && pos[k].top === pos.REPART.top) : [];
+  if (directsRangee.length) {
+    const r = pos.REPART, t = r.top, ordre = cibles.filter(k => k !== spdK);
+    const xd = Math.max(...directsRangee.map(k => pos[k].x + pos[k].n * U));
+    // fils du plus intérieur (source la plus à droite) au plus extérieur
+    const fils = [];
+    [...directsRangee].reverse().forEach(k => {
+      const d = repDepart(r.x, ordre.indexOf(k)), a = arrivee(k, pos[k]);
+      fils.push({ k, x0: d.L, x1: a.L, c: ROUGE }, { k, x0: d.N, x1: a.N, c: BLEU });
+    });
+    const groupes = {};
+    fils.forEach((f, w) => {
+      const gk = groupes[f.k] || (groupes[f.k] = fil("FIL-" + f.k, pk, "Répartiteur → " + (LABEL[f.k] || f.k), "10 mm²", "REPART", f.k, {
+        type: "Alimentation d'un départ direct",
+        infos: [["Section", "10 mm²"], ["Conducteur", SOUPLE], ["Côté appareil", "Bornes à vis"], ["Longueur", "Courte : l'appareil est sur la même rangée que le répartiteur"]],
+        note: "Pas de 30 mA en amont : protection différentielle assurée en aval (tableau des combles, ou borne de recharge)." }));
+      const yb = t + H + 60 + w * 6, xc = xd + 8 + w * 6, yh = t - 10 - w * 6;
+      trace(gk, `M${f.x0} ${t + H - 14}V${yb}H${xc}V${yh}H${f.x1}V${t + 14}`, f.c);
+    });
+  }
+
+  cibles.filter(k => k !== spdK && !directsRangee.includes(k)).forEach((k, i) => {
     const p = pos[k], a = arrivee(k, p), yT = p.top + 14;
     const j = parRangee[p.top] = (parRangee[p.top] ?? -1) + 1;
     const yN = p.top - 34 - j * 9, yL = p.top - 38 - j * 9;
-    const dp = depart(i);
+    const dp = depart(cibles.filter(c => c !== spdK).indexOf(k));
     const comb = pk !== "principal", sec = comb ? "6 mm²" : "10 mm²";
     const gf = fil("FIL-" + k, pk, (comb ? "Arrivée des combles" : "Répartiteur") + " → " + (LABEL[k] || k), sec, comb ? P.source : "REPART", k, {
       type: E[k].kind === "spd" ? "Alimentation du parafoudre" : E[k].direct ? "Alimentation d'un départ direct" : "Alimentation d'une tête de groupe",
