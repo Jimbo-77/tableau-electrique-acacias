@@ -136,9 +136,9 @@ const E = {
     usage: "Tête de toute l'installation. Il alimente la répartition du tableau principal." },
   REPART: { kind: "repart", n: 6, rating: ["RÉPART.", "100 A"], nom: "Répartiteur modulaire", type: "Répartiteur bipolaire à barreaux étagés, 100 A, 10 départs, 6 modules",
     ref: "Legrand 4 004 02",
-    infos: [["Arrivée", "6 à 16 mm² souple (10 à 25 mm² rigide)"], ["Départs", "1,5 à 10 mm² souple, bornes à vis"], ["Utilisés", "9 départs sur 9 (parafoudre, 6 interrupteurs différentiels dont ID-EXT, départ des combles TD-C, disjoncteur de la borne)"]],
+    infos: [["Arrivée", "6 à 16 mm² souple (10 à 25 mm² rigide)"], ["Départs", "1,5 à 10 mm² souple, bornes à vis"], ["Utilisés", "8 départs sur 9 (parafoudre, 5 interrupteurs différentiels, départ des combles TD-C, disjoncteur de la borne). ID-EXT est alimenté à travers le parafoudre"]],
     usage: "Reçoit la phase et le neutre du disjoncteur de branchement et les redistribue en fil souple 10 mm² vers le parafoudre et l'arrivée (en haut, à vis) de chaque interrupteur différentiel.",
-    note: "Préféré au peigne vertical VX³ (4 050 02) : celui-ci est limité à 12 kVA et n'alimente qu'un appareil par rangée, alors que les rangées 1 à 3 ont 2 ou 3 têtes de groupe. Les 9 départs sont utilisés : une nouvelle tête de groupe passera par un repiquage ou un second répartiteur." },
+    note: "Préféré au peigne vertical VX³ (4 050 02) : celui-ci est limité à 12 kVA et n'alimente qu'un appareil par rangée, alors que les rangées 1 à 3 ont 2 ou 3 têtes de groupe. 1 départ reste libre pour une évolution." },
   SPD: { kind: "spd", n: 2, rating: ["SPD", "T2+T3"], nom: "Parafoudre", type: "Parafoudre type 2+3, 1P+N",
     ref: "Legrand 0 039 51", appareil: "Protection de déconnexion intégrée",
     usage: "Protège l'installation contre les surtensions (foudre, manœuvres sur le réseau).",
@@ -208,7 +208,7 @@ const E = {
     note: "Déjà en ta possession. Le neutre ne doit jamais être câblé sur C1 ou C2. Protection en amont ≤ 20 A : le disjoncteur E-EXT 10 A convient. Pilotage par les commandes sans fil non décrit dans la notice : à tester à la mise en service." },
 
   /* ---------- Extérieur (rangée 4) ---------- */
-  IDEXT: id(63, "ID-EXT – Circuits extérieurs", {
+  IDEXT: id(63, "ID-EXT – Circuits extérieurs", { via: "SPD",
     usage: "Différentiel 30 mA réservé à l'extérieur. Un défaut dehors (humidité) ne coupe que l'extérieur : frigo, réseau et domotique restent alimentés.",
     note: "Obligatoire dès qu'un circuit alimente du matériel non fixé au bâtiment (chalet, bornes ou spots de jardin, prise sur potelet). 63 A pour encaisser le futur départ du chalet." }),
   EEXT: dj(10, "E-EXT – Éclairage extérieur", ["Éclairage façade (côté rue)", "Éclairage côté jardin"],
@@ -297,13 +297,13 @@ for (const [pk, p] of Object.entries(PANELS)) {
           usage: "Distribue la phase et le neutre de l'interrupteur différentiel aux disjoncteurs qui le suivent sur le rail.",
           note: "Les disjoncteurs à bornes automatiques ne s'alimentent que par le peigne.", amont: k, aval: [] };
         PANEL_OF[pid] = pk;
-        m.amont = pk === "principal" ? "REPART" : p.source;
+        m.amont = m.via || (pk === "principal" ? "REPART" : p.source);
         m.aval = [pid];
         r.groupes.push(groupe);
       } else if (m.kind === "dj" && groupe && !m.direct) {
         groupe.members.push(k); E[groupe.id].aval.push(k); m.amont = groupe.id;
       } else {
-        if (m.kind === "spd" || m.direct) m.amont = "REPART";
+        if (m.via) m.amont = m.via; else if (m.kind === "spd" || m.direct) m.amont = "REPART";
         groupe = null;
       }
       if (m.kind === "tl") m.amont = m.circuit;
@@ -312,7 +312,8 @@ for (const [pk, p] of Object.entries(PANELS)) {
 }
 for (const [k, m] of Object.entries(E)) if (m.feed) { m.amont = m.feed; (E[m.feed].aval = E[m.feed].aval || []).push(k); }
 E.AGCP.aval = ["REPART"]; E.REPART.amont = "AGCP";
-E.REPART.aval = PANELS.principal.rows.flatMap(r => r.items).filter(k => E[k].kind === "id" || E[k].kind === "spd" || E[k].direct);
+E.REPART.aval = PANELS.principal.rows.flatMap(r => r.items).filter(k => (E[k].kind === "id" || E[k].kind === "spd" || E[k].direct) && !E[k].via);
+for (const [k, m] of Object.entries(E)) if (m.via) (E[m.via].aval = E[m.via].aval || []).push(k);
 E.ARRC.amont = "TDC";
 E.ARRC.aval = PANELS.combles.rows.flatMap(r => r.items).filter(k => E[k].kind === "id");
 E.TDC.aval = ["ARRC"];
@@ -622,7 +623,7 @@ function dessiner(pk) {
   });
 
   // Liaisons d'alimentation des têtes de groupe (arrivée en haut, à vis)
-  const cibles = P.rows.flatMap(r => r.items).filter(k => E[k].kind === "id" || E[k].kind === "spd" || E[k].direct);
+  const cibles = P.rows.flatMap(r => r.items).filter(k => (E[k].kind === "id" || E[k].kind === "spd" || E[k].direct) && !E[k].via);
   if (!cibles.length) return;
   const parRangee = {};
   const trace = (grp, d, c, w = 3.2) => {
@@ -648,6 +649,16 @@ function dessiner(pk) {
   } else {
     depart = i => ({ pN: `M${srcN.x} ${srcN.y}V${srcN.y + 20 + i * 8}H${gutN(i)}`, pL: `M${srcL.x} ${srcL.y}V${srcL.y + 24 + i * 8}H${gutL(i)}` });
   }
+  // Appareils alimentés en traversant le parafoudre (arrivée haut / départ haut, 63 A max)
+  P.rows.flatMap(r => r.items).filter(k => E[k].via && pos[E[k].via]).forEach(k => {
+    const sp = pos[E[k].via], ps = poles(sp.x, sp.n), p = pos[k], a = arrivee(k, p), yT = p.top + 14;
+    const gv = fil("FIL-" + k, pk, "Parafoudre → " + (LABEL[k] || k), "10 mm²", E[k].via, k, {
+      type: "Alimentation par le départ haut du parafoudre",
+      infos: [["Section", "10 mm²"], ["Conducteur", SOUPLE], ["Côté appareil", "Arrivée haute, bornes à vis"], ["Limite", "63 A maximum à travers le parafoudre (IL du 0 039 51)"]],
+      note: "Câblage « en V » : le courant traverse les bornes du parafoudre, ce qui raccourcit ses liaisons et libère un départ du répartiteur." });
+    trace(gv, `M${ps.N + 5} ${sp.top + 14}V${sp.top - 18}H${a.N}V${yT}`, BLEU);
+    trace(gv, `M${ps.L + 5} ${sp.top + 14}V${sp.top - 24}H${a.L}V${yT}`, ROUGE);
+  });
   cibles.forEach((k, i) => {
     const p = pos[k], a = arrivee(k, p), yT = p.top + 14;
     const j = parRangee[p.top] = (parRangee[p.top] ?? -1) + 1;
