@@ -142,7 +142,7 @@ const E = {
   SPD: { kind: "spd", n: 2, rating: ["SPD", "T2+T3"], nom: "Parafoudre", type: "Parafoudre type 2+3, 1P+N",
     ref: "Legrand 0 039 51", appareil: "Protection de déconnexion intégrée",
     usage: "Protège l'installation contre les surtensions (foudre, manœuvres sur le réseau).",
-    note: "Liaisons phase, neutre et terre les plus courtes possible : moins de 50 cm au total." },
+    note: "Liaisons phase, neutre et terre les plus courtes possible : moins de 50 cm au total. D'où sa place en rangée 4, juste à côté du répartiteur qui l'alimente et au plus près du bornier de terre." },
 
   ID1: id(40, "ID1 – Prises RDC"),
   P1: dj(16, "P1 – Prises séjour", ["8 prises du séjour"]),
@@ -260,10 +260,10 @@ const PANELS = {
     resume: "Drivia 18, 4 rangées de 18 modules (4 012 24) + coffret d'une rangée pour les télérupteurs (4 012 21).",
     source: "AGCP", modules: 18,
     rows: [
-      { label: "Rangée 1", items: ["SPD", "ID1", "P1", "P2", "P4", "VDI", "ID5", "P5", "P6", "P7", "SS", "MCTRL"] },
+      { label: "Rangée 1", items: ["ID1", "P1", "P2", "P4", "VDI", "ID5", "P5", "P6", "P7", "SS", "MCTRL"] },
       { label: "Rangée 2", items: ["ID2", "P3", "S1", "S2", "S3", "S4", "S5", "ID4", "T1", "PAC1", "PAC2"] },
       { label: "Rangée 3", items: ["ID3", "E1", "E2", "E3", "E4", "E5", "VR", "VMC", "TDC", "DJVE"] },
-      { label: "Rangée 4 · répartiteur, extérieur et réserve", items: ["REPART", "IDEXT", "EEXT", "PEXT", "CHALET", "CT20", "TL19"] },
+      { label: "Rangée 4 · répartiteur, extérieur et réserve", items: ["REPART", "SPD", "IDEXT", "EEXT", "PEXT", "CHALET", "CT20", "TL19"] },
       { label: "Coffret 1 rangée · télérupteurs connectés", items: ["TL1","TL2","TL3","TL4","TL5","TL6","TL7","TL8","TL9","TL11","TL12","TL13","TL14","TL15","TL16","TL17","TL18"] }
     ]
   },
@@ -440,7 +440,6 @@ function dessinerModule(k, x, top) {
       infos: [["Section", "6 mm²"], ["Conducteur", RIGIDE("6") + ", vert/jaune"], ["Longueur", "La plus courte possible : phase + neutre + terre du parafoudre < 50 cm au total"]] });
     el("path", { class: "wire-hit", d: `M${cx} ${yb}V${yb + 26}` }, gt);
     el("path", { d: `M${cx} ${yb}V${yb + 26}`, stroke: VERT, "stroke-width": 3 }, gt);
-    el("text", { x: cx + 5, y: yb + 30, "font-size": 8, fill: VERT }, gt, "→ bornier de terre");
   }
 }
 
@@ -580,6 +579,15 @@ function dessiner(pk) {
       const gpq = fil("FIL-PIQUETS", pk, "Piquets de terre → barrette de coupure", "25 mm² cuivre nu", null, "BARR", {
         type: "Conducteur de terre enterré",
         infos: [["Section", "25 mm² cuivre nu (16 mm² s'il est isolé et protégé)"], ["Piquets", "2 piquets de 1,5 m, espacés d'au moins 3 m"], ["Mesure visée", "100 ohms ou moins"]] });
+      // terre du parafoudre jusqu'au bornier
+      if (pos.SPD) {
+        const sp = pos.SPD, scx = sp.x + sp.n * U / 2, syb = sp.top + H - 14 + 26, yh = sp.top + H + 76, xg = RAIL_X - 100, sx = bx + 12;
+        const d = `M${scx} ${syb}V${yh}H${xg}V${by - 14}H${sx}V${by + 9}`;
+        const gt = hitGroup("FIL-TERRE-SPD");
+        el("path", { class: "wire-hit", d }, gt);
+        el("path", { d, stroke: VERT, "stroke-width": 3, fill: "none", "stroke-linejoin": "round" }, gt);
+        el("path", { d, stroke: "#e2c84a", "stroke-width": 3, fill: "none", "stroke-dasharray": "6 6", "stroke-linejoin": "round" }, gt);
+      }
       const dq = `M${px + 46} ${cy + 26}V${cy + 58}`;
       el("path", { class: "wire-hit", d: dq }, gpq);
       el("path", { d: dq, stroke: "#b87333", "stroke-width": 4.5, fill: "none" }, gpq);
