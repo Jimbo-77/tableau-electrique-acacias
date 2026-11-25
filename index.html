@@ -164,6 +164,8 @@ const E = {
   S3: dj(20, "S3 – Lave-vaisselle", ["Lave-vaisselle"]),
   S4: dj(20, "S4 – Lave-linge", ["Lave-linge"]),
   S5: dj(20, "S5 – Sèche-linge", ["Sèche-linge"]),
+  PTV: dj(16, "P-TV – Prises TV / home cinéma", ["8 prises dédiées au meuble TV et au home cinéma (TV, ampli, box, lecteurs, caisson)"], {
+    note: "8 prises : le maximum autorisé sur un circuit 16 A en 1,5 mm². Sur ID2 : séparé des prises du séjour (P1, ID1) et de son éclairage (ID3)." }),
   ID4: id(63, "ID4 – Eau et PAC", { note: "63 A à cause de l'appoint électrique de 5 kW de la PAC. Type de différentiel à confirmer dans la notice Viessmann." }),
   T1: dj(16, "T1 – Nourrice et adoucisseur", ["Nourrice", "Adoucisseur"]),
   PAC1: dj(16, "PAC-1 – Unité extérieure PAC", ["Unité extérieure Viessmann Vitocal 250-A, taille 08"], { section: "2,5 mm² (câble R2V, sous gaine TPC à l'extérieur)", note: "Calibre C16 A prescrit par Viessmann pour la taille 08." }),
@@ -258,7 +260,7 @@ const E = {
 };
 
 // Libellé court affiché sur l'étiquette de chaque appareil
-const LABEL = { E1A: "E1a", E1B: "E1b", E2A: "E2a", E2B: "E2b", E3A: "E3a", E3B: "E3b", E5A: "E5a", E5B: "E5b", EC1: "E-C1", EC2: "E-C2", MCTRL: "Module Control", CT20: "CT 20 A", IDEXT: "ID-EXT", EEXT: "E-EXT", PEXT: "P-EXT", CHALET: "CHAL.", PAC1: "PAC-1", PAC2: "PAC-2", TDC: "TD-C", DJVE: "VE",
+const LABEL = { PTV: "P-TV", E1A: "E1a", E1B: "E1b", E2A: "E2a", E2B: "E2b", E3A: "E3a", E3B: "E3b", E5A: "E5a", E5B: "E5b", EC1: "E-C1", EC2: "E-C2", MCTRL: "Module Control", CT20: "CT 20 A", IDEXT: "ID-EXT", EEXT: "E-EXT", PEXT: "P-EXT", CHALET: "CHAL.", PAC1: "PAC-1", PAC2: "PAC-2", TDC: "TD-C", DJVE: "VE",
   IDC1: "ID-C1", IDC2: "ID-C2", EC: "E-C", PC1: "P-C1", PC2: "P-C2", PSB: "P-SB", SSC: "SS-C" };
 
 const PANELS = {
@@ -268,10 +270,10 @@ const PANELS = {
     source: "AGCP", modules: 18,
     rows: [
       { label: "Rangée 1", items: ["ID1", "P1", "P2", "P4", "VDI", "E4", "E5A", "E5B", "MCTRL"] },
-      { label: "Rangée 2", items: ["ID2", "P3", "S1", "S2", "S3", "S4", "S5", "ID4", "T1", "PAC1", "PAC2"] },
-      { label: "Rangée 3", items: ["ID3", "E1A", "E1B", "E2A", "E2B", "VR", "VMC", "ID5", "P5", "P6", "P7", "SS", "E3A", "E3B", "TL19"] },
+      { label: "Rangée 2", items: ["ID2", "P3", "S1", "S2", "S3", "S4", "S5", "PTV", "ID4", "T1", "PAC1", "PAC2"] },
+      { label: "Rangée 3", items: ["ID3", "E1A", "E1B", "E2A", "E2B", "VR", "VMC", "ID5", "P5", "P6", "P7", "SS", "E3A", "E3B"] },
       { label: "Rangée 4 · répartiteur, départs directs et extérieur", items: ["REPART", "SPD", "IDEXT", "EEXT", "PEXT", "CHALET", "CT20", "TDC", "DJVE"] },
-      { label: "Coffret 1 rangée · télérupteurs connectés", items: ["TL1","TL2","TL3","TL4","TL5","TL6","TL7","TL8","TL9","TL11","TL12","TL13","TL14","TL15","TL16","TL17","TL18"] }
+      { label: "Coffret 1 rangée · télérupteurs connectés", items: ["TL1","TL2","TL3","TL4","TL5","TL6","TL7","TL8","TL9","TL11","TL12","TL13","TL14","TL15","TL16","TL17","TL18","TL19"] }
     ]
   },
   combles: {
