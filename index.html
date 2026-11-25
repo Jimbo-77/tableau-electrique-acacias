@@ -146,12 +146,12 @@ const E = {
     usage: "Protège l'installation contre les surtensions (foudre, manœuvres sur le réseau).",
     note: "Liaisons phase, neutre et terre les plus courtes possible : moins de 50 cm au total. D'où sa place en rangée 4, juste à côté du répartiteur qui l'alimente et au plus près du bornier de terre." },
 
-  ID1: id(40, "ID1 – Prises RDC"),
+  ID1: id(40, "ID1 – Prises RDC et éclairage étage"),
   P1: dj(16, "P1 – Prises séjour", ["8 prises du séjour"]),
   P2: dj(16, "P2 – Prises entrée, WC, cellier", ["Prises de l'entrée, du WC et du cellier"]),
   P4: dj(16, "P4 – Frigo et hotte", ["Réfrigérateur", "Hotte"]),
   VDI: dj(16, "VDI – Coffret réseau et domotique", ["Coffret de communication (box, switch)", "Module Control (passerelle Netatmo) au tableau"]),
-  ID5: id(40, "ID5 – Prises étage"),
+  ID5: id(40, "ID5 – Prises étage et éclairage cuisine"),
   P5: dj(16, "P5 – Prises chambre 01", ["5 prises de la chambre 01"]),
   P6: dj(16, "P6 – Prises bureau", ["6 prises du bureau"]),
   P7: dj(16, "P7 – Prises palier et salle d'eau", ["2 prises du palier", "2 prises de la salle d'eau (hors volumes)"]),
@@ -169,12 +169,16 @@ const E = {
   PAC1: dj(16, "PAC-1 – Unité extérieure PAC", ["Unité extérieure Viessmann Vitocal 250-A, taille 08"], { section: "2,5 mm² (câble R2V, sous gaine TPC à l'extérieur)", note: "Calibre C16 A prescrit par Viessmann pour la taille 08." }),
   PAC2: dj(32, "PAC-2 – Unité intérieure PAC", ["Électronique de l'unité intérieure", "Appoint électrique 5 kW (variante V111, alimentation centrale)"], { note: "Calibre C32 A prescrit par Viessmann pour la variante V111." }),
 
-  ID3: id(40, "ID3 – Éclairage et ventilation"),
-  E1: dj(10, "E1 – Éclairage séjour", ["Séjour : 3 points (lampes Hue, circuit sous tension permanente)"]),
-  E2: dj(10, "E2 – Éclairage entrée et circulations", ["Entrée", "Dégagement", "Escalier (RDC)", "WC", "Cellier (détecteur de présence)"]),
-  E3: dj(10, "E3 – Éclairage cuisine", ["Cuisine : 3 plafonniers", "Éclairage sous meubles hauts (boîte en attente pour le driver LED)"]),
-  E4: dj(10, "E4 – Éclairage chambre et bureau", ["Chambre 01", "Bureau"], { note: "Pièces prévues en Hue." }),
-  E5: dj(10, "E5 – Éclairage palier, escalier, salle d'eau", ["Palier", "Escalier (étage)", "Salle d'eau"]),
+  ID3: id(40, "ID3 – Éclairage séjour, entrée, circulations et ventilation"),
+  E1A: dj(10, "E1a – Éclairage séjour 1 et 2", ["Séjour 1", "Séjour 2"], { note: "Lampes Hue : circuit sous tension permanente. Deux lignes maximum : une par trou de la double borne automatique de sortie." }),
+  E1B: dj(10, "E1b – Éclairage séjour 3 et entrée", ["Séjour 3", "Entrée"], { note: "Deux lignes maximum : une par trou de la double borne automatique de sortie." }),
+  E2A: dj(10, "E2a – Éclairage dégagement et escalier RDC", ["Dégagement", "Escalier (RDC)"], { note: "Deux lignes maximum : une par trou de la double borne automatique de sortie." }),
+  E2B: dj(10, "E2b – Éclairage WC et cellier", ["WC", "Cellier (détecteur de présence)"], { note: "Deux lignes maximum : une par trou de la double borne automatique de sortie." }),
+  E3A: dj(10, "E3a – Éclairage cuisine 1 et 2", ["Cuisine 1", "Cuisine 2"], { note: "Sur ID5 : les prises de la cuisine sont sur ID1 et ID2, un défaut ne plonge pas la cuisine dans le noir. Deux lignes maximum : une par trou de la double borne automatique de sortie." }),
+  E3B: dj(10, "E3b – Éclairage cuisine 3 et sous meubles hauts", ["Cuisine 3", "Éclairage sous meubles hauts (boîte en attente pour le driver LED)"], { note: "Deux lignes maximum : une par trou de la double borne automatique de sortie." }),
+  E4: dj(10, "E4 – Éclairage chambre et bureau", ["Chambre 01", "Bureau"], { note: "Pièces prévues en Hue. Sur ID1 : les prises de l'étage sont sur ID5. Deux lignes maximum : une par trou de la double borne automatique de sortie." }),
+  E5A: dj(10, "E5a – Éclairage palier et escalier étage", ["Palier", "Escalier (étage)"], { note: "Deux lignes maximum : une par trou de la double borne automatique de sortie." }),
+  E5B: dj(10, "E5b – Éclairage salle d'eau", ["Salle d'eau"], { note: "Une seule ligne : reste un trou de sortie libre." }),
   VR: dj(16, "VR – Volets roulants", ["Volets roulants (option)"]),
   VMC: dj(10, "VMC – Ventilation", ["VMC dans les combles (option)"], { note: "Calibre usuel d'une VMC : 2 A. 10 A conservé ici par défaut, à ajuster selon la notice de la VMC." }),
   TDC: dj(32, "TD-C – Départ tableau des combles", [], { direct: true, ref: "Legrand 4 067 77", appareil: "DNX³ 1P+N, courbe C, bornes à vis en arrivée et en sortie",
@@ -187,15 +191,15 @@ const E = {
     usage: "Seul appareil de la borne à installer au tableau : il protège la ligne contre les surcharges et les courts-circuits.",
     note: "Pas de différentiel 30 mA au tableau : il est dans la borne (guide installateur Legrand PRT224003). Placé en rangée 4 avec TD-C, à côté du répartiteur qui les alimente directement : ses bornes à vis reçoivent le fil souple 10 mm². Schéma de raccordement Legrand LE14647AA/08." }),
 
-  TL19: tl("Sous meubles hauts", "E3"),
+  TL19: tl("Sous meubles hauts", "E3B"),
 
   /* ---------- Coffret 1 rangée : télérupteurs ---------- */
-  TL1: tl("Séjour 1", "E1"), TL2: tl("Séjour 2", "E1"), TL3: tl("Séjour 3", "E1"),
-  TL4: tl("Entrée", "E2"), TL5: tl("Dégagement", "E2"), TL6: tl("Escalier", "E2"), TL7: tl("WC", "E2"),
-  TL8: tl("Cellier", "E2"), TL9: tl("Façade (rue)", "EEXT"),
-  TL11: tl("Cuisine 1", "E3"), TL12: tl("Cuisine 2", "E3"), TL13: tl("Cuisine 3", "E3"),
+  TL1: tl("Séjour 1", "E1A"), TL2: tl("Séjour 2", "E1A"), TL3: tl("Séjour 3", "E1B"),
+  TL4: tl("Entrée", "E1B"), TL5: tl("Dégagement", "E2A"), TL6: tl("Escalier", "E2A"), TL7: tl("WC", "E2B"),
+  TL8: tl("Cellier", "E2B"), TL9: tl("Façade (rue)", "EEXT"),
+  TL11: tl("Cuisine 1", "E3A"), TL12: tl("Cuisine 2", "E3A"), TL13: tl("Cuisine 3", "E3B"),
   TL14: tl("Chambre 01", "E4"), TL15: tl("Bureau", "E4"),
-  TL16: tl("Palier", "E5"), TL17: tl("Escalier étage", "E5"), TL18: tl("Salle d'eau", "E5"),
+  TL16: tl("Palier", "E5A"), TL17: tl("Escalier étage", "E5A"), TL18: tl("Salle d'eau", "E5B"),
 
   /* ---------- Matériel connecté déjà possédé ---------- */
   MCTRL: { kind: "gw", n: 2.5, rating: ["CTRL", "Wi-Fi"], nom: "Module Control – Passerelle Drivia with Netatmo", type: "Passerelle modulaire Wi-Fi ⇄ radio",
@@ -243,17 +247,18 @@ const E = {
     infos: [["Protection amont", "Disjoncteur TD-C 32 A, alimenté directement par le répartiteur"], ["Section", "6 mm²"]],
     usage: "Alimente les deux interrupteurs différentiels du tableau des combles." },
   IDC1: id(40, "ID-C1 – Chambre parentale"),
-  EC: dj(10, "E-C – Éclairage combles", ["Chambre parentale", "Dressing", "Salle de bain", "Escalier (haut)"]),
+  EC1: dj(10, "E-C1 – Éclairage chambre parentale et dressing", ["Chambre parentale", "Dressing"], { note: "Deux lignes maximum : une par trou de la double borne automatique de sortie." }),
+  EC2: dj(10, "E-C2 – Éclairage salle de bain et escalier haut", ["Salle de bain", "Escalier (haut)"], { note: "Sur ID-C1 : les prises de la salle de bain sont sur ID-C2. Deux lignes maximum : une par trou de la double borne automatique de sortie." }),
   PC1: dj(16, "P-C1 – Prises chambre parentale", ["6 prises de la chambre"]),
   PC2: dj(16, "P-C2 – Prises dressing et palier", ["Prises du dressing et du palier des combles"]),
   IDC2: id(40, "ID-C2 – Salle de bain"),
   PSB: dj(16, "P-SB – Prises salle de bain", ["2 prises hors volumes"], { note: "Liaison équipotentielle locale de la salle de bain à prévoir." }),
   SSC: dj(16, "SS-C – Sèche-serviettes", ["Sèche-serviettes électrique (option)"], { note: "Seulement si le sèche-serviettes est électrique." }),
-  TLC1: tl("Chambre parentale", "EC"), TLC2: tl("Dressing", "EC"), TLC3: tl("Salle de bain", "EC"), TLC4: tl("Escalier (haut)", "EC")
+  TLC1: tl("Chambre parentale", "EC1"), TLC2: tl("Dressing", "EC1"), TLC3: tl("Salle de bain", "EC2"), TLC4: tl("Escalier (haut)", "EC2")
 };
 
 // Libellé court affiché sur l'étiquette de chaque appareil
-const LABEL = { MCTRL: "Module Control", CT20: "CT 20 A", IDEXT: "ID-EXT", EEXT: "E-EXT", PEXT: "P-EXT", CHALET: "CHAL.", PAC1: "PAC-1", PAC2: "PAC-2", TDC: "TD-C", DJVE: "VE",
+const LABEL = { E1A: "E1a", E1B: "E1b", E2A: "E2a", E2B: "E2b", E3A: "E3a", E3B: "E3b", E5A: "E5a", E5B: "E5b", EC1: "E-C1", EC2: "E-C2", MCTRL: "Module Control", CT20: "CT 20 A", IDEXT: "ID-EXT", EEXT: "E-EXT", PEXT: "P-EXT", CHALET: "CHAL.", PAC1: "PAC-1", PAC2: "PAC-2", TDC: "TD-C", DJVE: "VE",
   IDC1: "ID-C1", IDC2: "ID-C2", EC: "E-C", PC1: "P-C1", PC2: "P-C2", PSB: "P-SB", SSC: "SS-C" };
 
 const PANELS = {
@@ -262,9 +267,9 @@ const PANELS = {
     resume: "Drivia 18, 4 rangées de 18 modules (4 012 24) + coffret d'une rangée pour les télérupteurs (4 012 21).",
     source: "AGCP", modules: 18,
     rows: [
-      { label: "Rangée 1", items: ["ID1", "P1", "P2", "P4", "VDI", "ID5", "P5", "P6", "P7", "SS", "MCTRL"] },
+      { label: "Rangée 1", items: ["ID1", "P1", "P2", "P4", "VDI", "E4", "E5A", "E5B", "MCTRL"] },
       { label: "Rangée 2", items: ["ID2", "P3", "S1", "S2", "S3", "S4", "S5", "ID4", "T1", "PAC1", "PAC2"] },
-      { label: "Rangée 3", items: ["ID3", "E1", "E2", "E3", "E4", "E5", "VR", "VMC", "TL19"] },
+      { label: "Rangée 3", items: ["ID3", "E1A", "E1B", "E2A", "E2B", "VR", "VMC", "ID5", "P5", "P6", "P7", "SS", "E3A", "E3B", "TL19"] },
       { label: "Rangée 4 · répartiteur, départs directs et extérieur", items: ["REPART", "SPD", "IDEXT", "EEXT", "PEXT", "CHALET", "CT20", "TDC", "DJVE"] },
       { label: "Coffret 1 rangée · télérupteurs connectés", items: ["TL1","TL2","TL3","TL4","TL5","TL6","TL7","TL8","TL9","TL11","TL12","TL13","TL14","TL15","TL16","TL17","TL18"] }
     ]
@@ -274,7 +279,7 @@ const PANELS = {
     resume: "Drivia 13, 2 rangées de 13 modules (4 012 12), alimenté par le départ TD-C du tableau principal.",
     source: "ARRC", modules: 13,
     rows: [
-      { label: "Rangée 1", items: ["IDC1", "EC", "PC1", "PC2", "IDC2", "PSB", "SSC"] },
+      { label: "Rangée 1", items: ["IDC1", "EC1", "EC2", "PC1", "PC2", "IDC2", "PSB", "SSC"] },
       { label: "Rangée 2 · télérupteurs connectés et réserve", items: ["TLC1", "TLC2", "TLC3", "TLC4"] }
     ]
   }
