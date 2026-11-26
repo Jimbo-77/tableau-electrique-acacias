@@ -257,22 +257,23 @@ const E = {
     infos: [["Position", "Bas à 250 mm, haut à 625 mm"], ["Arrivée", "Fibre (DTIo) et câble opérateur"], ["Alimentation", "Circuit VDI, 2 prises pour la box et le switch"]],
     usage: "Box, switch, répartition RJ45 et TV. Le volume additionnel exigé (240 × 300 × 200 mm) est intégré ici ou juste à côté.",
     note: "Ventilé et le plus grand possible pour ton matériel réseau : un switch qui chauffe dans un coffret fermé vieillit mal." },
-  GTL_TERRE: { kind: "gtl", nom: "Terre : borne principale et barrette de coupure", type: "En pied de GTL",
-    aval: ["BPT", "BARR"],
-    infos: [["Position", "100 à 200 mm du sol"], ["Arrivée", "Câble cuivre 25 mm² depuis les piquets"]],
-    usage: "Accessible sans démonter les coffrets, pour la mesure de la terre." },
+  GTL_TERRE: { kind: "gtl", nom: "Terre : borne principale de terre", type: "En pied de GTL",
+    aval: ["BPT"],
+    infos: [["Position", "100 à 200 mm du sol"], ["Arrivée", "Câble 16 mm² isolé vert/jaune depuis la barrette de coupure, sur le mur extérieur"]],
+    usage: "Point central de la terre. La barrette de coupure est dehors : la mesure de la terre se fait sans entrer dans la maison." },
   BT: { kind: "terre", nom: "Bornier de terre du tableau principal", type: "Borniers de répartition verts, 26 + 16 départs",
     ref: "Legrand 4 048 39 + 0 048 35 (si non fournis avec le coffret)",
     infos: [["Arrivée", "Liaison 16 mm² depuis la borne principale de terre (GTL)"], ["Départs", "Terres de tous les circuits et du parafoudre"]],
     usage: "Réunit les conducteurs de protection (vert/jaune) de tous les circuits du tableau principal." },
   BPT: { kind: "terre", nom: "Borne principale de terre (GTL)", type: "Bornier de terre vert, 16 départs",
     ref: "Legrand 0 048 35",
-    infos: [["Raccordés", "Barrette de coupure, tableau principal (16 mm²), liaison équipotentielle principale (6 mm²), salles de bain (2,5 mm²)"]],
+    infos: [["Raccordés", "Barrette de coupure (mur extérieur), tableau principal (16 mm²), liaison équipotentielle principale (6 mm²), salles de bain (2,5 mm²)"]],
     usage: "Point central de la terre de la maison, dans la GTL.", note: "Détail des longueurs et des prix dans l'onglet « Prise de terre » de la liste du matériel." },
-  BARR: { kind: "terre", nom: "Barrette de coupure de terre", type: "Barrette démontable 10 à 35 mm²",
-    ref: "Eurohm 70508 (chez Legrand : barrette à cosses 0 343 89, à confirmer)",
-    usage: "Se démonte pour isoler les piquets et mesurer la résistance de terre (100 ohms ou moins visés).",
-    note: "Côté piquets : câble cuivre nu 25 mm² enterré (16 mm² s'il est isolé et protégé). Deux piquets de 1,5 m espacés d'au moins 3 m." },
+  BARR: { kind: "terre", nom: "Barrette de coupure de terre (mur extérieur)", type: "Barrette démontable 10 à 35 mm², modèle pour l'extérieur, sans coffret",
+    ref: "Modèle extérieur à choisir : corps laiton ou inox, visserie inox, capot de protection (à confirmer)",
+    infos: [["Position", "Mur extérieur, à ≈ 30 cm du sol, au-dessus de l'arrivée du câble des piquets"], ["Démontage", "Uniquement avec un outil"], ["Vers la maison", "Câble 16 mm² isolé vert/jaune, traversée du mur sous fourreau"]],
+    usage: "Se démonte pour isoler les piquets et mesurer la résistance de terre (100 ohms ou moins visés), sans entrer dans la maison.",
+    note: "Sans coffret, la barrette est exposée à la pluie et au gel : prends un modèle prévu pour l'extérieur, protège les cosses (graisse de contact) et resserre les vis à chaque contrôle. Les modèles intérieurs en acier zingué rouillent vite dehors." },
   BTC: { kind: "terre", nom: "Bornier de terre du tableau des combles", type: "Bornier de répartition vert, 16 départs",
     ref: "Legrand 0 048 35 (si non fourni avec le coffret)",
     infos: [["Arrivée", "Conducteur vert/jaune 6 mm² de la ligne TD-C"]],
@@ -625,7 +626,7 @@ function dessinerGTL() {
     }
   };
   bloc("GTL_TERRE", 100, 200, "#3f9a55", "", null, (g, y, h) => {
-    el("text", { x: gx + gw / 2, y: y + h / 2 + 4, "text-anchor": "middle", "font-size": 9.5, "font-weight": 700, fill: "#fff" }, g, "Terre + barrette");
+    el("text", { x: gx + gw / 2, y: y + h / 2 + 4, "text-anchor": "middle", "font-size": 9.5, "font-weight": 700, fill: "#fff" }, g, "Borne princ. terre");
   });
   bloc("GTL_COM", 250, 625, "#eef3fa", "Coffret de communication", "2 rangées · fibre, box, switch, RJ45", rangees(2));
   bloc("GTL_TL", 650, 900, "#ffffff", "Télérupteurs connectés", "1 rangée · 4 012 21", rangees(1));
@@ -743,17 +744,19 @@ function dessiner(pk) {
       el("rect", { class: "body", x: px, y: py, width: 92, height: 34, rx: 4, fill: "#3f9a55", stroke: "#2a6e3b" }, gp);
       el("text", { x: px + 46, y: py + 21, "text-anchor": "middle", "font-size": 8.5, "font-weight": 700, fill: "#fff" }, gp, "Borne princ. terre");
       const gc = hitGroup("BARR"), cy = by + 70;
-      el("rect", { class: "body", x: px + 16, y: cy, width: 60, height: 26, rx: 4, fill: "#b9864a", stroke: "#7d5528" }, gc);
-      el("text", { x: px + 46, y: cy + 17, "text-anchor": "middle", "font-size": 8.5, "font-weight": 700, fill: "#fff" }, gc, "Barrette");
+      el("rect", { class: "body", x: px + 6, y: cy, width: 80, height: 26, rx: 4, fill: "#b9864a", stroke: "#7d5528" }, gc);
+      el("text", { x: px + 46, y: cy + 17, "text-anchor": "middle", "font-size": 8.5, "font-weight": 700, fill: "#fff" }, gc, "Barrette ext.");
+      el("path", { d: `M${px} ${cy - 12}H${px + 92}`, stroke: "#8a877d", "stroke-width": 1.2, "stroke-dasharray": "4 3" }, svg);
+      el("text", { x: px + 92, y: cy - 15, "text-anchor": "end", "font-size": 8, fill: "#8a877d" }, svg, "mur extérieur");
       vj(fil("FIL-BT", pk, "Borne principale de terre → bornier du tableau", "16 mm²", "BPT", "BT", {
         type: "Conducteur principal de protection", infos: [["Section", "16 mm²"], ["Conducteur", "H07V-K vert/jaune (10 mm² et plus : souple avec embouts)"]] }),
         `M${px + 92} ${by + 13}H${bx}`, 4);
-      vj(fil("FIL-BARR", pk, "Barrette de coupure → borne principale de terre", "16 mm²", "BARR", "BPT", {
-        type: "Conducteur de terre", infos: [["Section", "16 mm²"], ["Conducteur", "Cuivre isolé vert/jaune"]] }),
+      vj(fil("FIL-BARR", pk, "Barrette (mur extérieur) → borne principale de terre", "16 mm²", "BARR", "BPT", {
+        type: "Conducteur de terre", infos: [["Section", "16 mm²"], ["Conducteur", "Cuivre isolé vert/jaune"], ["Cheminement", "Traversée du mur sous fourreau, puis jusqu'au pied de la GTL"]] }),
         `M${px + 46} ${cy}V${py + 34}`, 4);
       const gpq = fil("FIL-PIQUETS", pk, "Piquets de terre → barrette de coupure", "25 mm² cuivre nu", null, "BARR", {
         type: "Conducteur de terre enterré",
-        infos: [["Section", "25 mm² cuivre nu (16 mm² s'il est isolé et protégé)"], ["Piquets", "2 piquets de 1,5 m, espacés d'au moins 3 m"], ["Mesure visée", "100 ohms ou moins"]] });
+        infos: [["Section", "25 mm² cuivre nu (16 mm² s'il est isolé et protégé)"], ["Piquets", "2 piquets de 1,5 m, espacés d'au moins 3 m"], ["Remontée", "Le long du mur jusqu'à la barrette, sous tube de protection mécanique"], ["Mesure visée", "100 ohms ou moins"]] });
       // terre du parafoudre jusqu'au bornier
       if (pos.SPD) {
         const sp = pos.SPD, scx = sp.x + (sp.n * U - 2) / 2 + 16, syb = sp.top + H - 14 + 26, yh = sp.top + H + 76, xg = RAIL_X - 100, sx = bx + 12;
