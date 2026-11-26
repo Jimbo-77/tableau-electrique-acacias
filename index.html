@@ -238,7 +238,7 @@ const E = {
     infos: [["Largeur", "355 mm : celle des coffrets Drivia 18"], ["Couvercles", "220 mm (courant fort) + 85 mm (communication)"], ["Fixation des coffrets", "Drivia clip, réglage en hauteur"]],
     usage: "Reçoit les coffrets et toutes les lignes : arrivée Enedis, départs vers l'étage et les combles par le haut, vers le RDC par le bas.",
     note: "Environ 50 lignes en étoile + attentes : garder ~15 cm libres au-dessus et au-dessous des coffrets pour les courbures. GTL obligatoire en 600 × 200 mm minimum pour un logement de plus de 35 m²." },
-  GTL_PC: { kind: "gtl", nom: "Panneau de contrôle Enedis", type: "Linky et disjoncteur de branchement côte à côte, format Drivia 18 (250 × 355 mm)",
+  GTL_PC: { kind: "gtl", nom: "Panneau de contrôle Enedis", type: "Linky et disjoncteur de branchement côte à côte : platine 225 × 250 mm dans un habillage Drivia 18 de 250 × 355 mm",
     ref: "Platine de branchement 13 modules Legrand 4 011 81 ou 4 011 91 + habillage Drivia 18 4 011 89",
     infos: [["Position", "Bas à 1 575 mm, haut à 1 825 mm"], ["Hauteur de la manette", "≈ 1,70 m : dans la plage imposée 0,90 m – 1,80 m"], ["Option A", "Linky déplacé dans la GTL, à gauche du disjoncteur"], ["Option B", "Linky en coffret en limite de propriété, seul le disjoncteur dans la GTL"]],
     usage: "Arrivée de l'énergie, aujourd'hui dans le salon, à déplacer dans la GTL de l'entrée.",
@@ -917,6 +917,13 @@ function marquer(k) { svg.querySelectorAll(".hit").forEach(g => g.classList.togg
 
 const fiche = document.getElementById("fiche");
 const LEGRAND_URL = {
+  "4 012 24": "https://www.legrand.fr/pro/catalogue/coffret-drivia-18-modules-4-rangees-ip30-ik05-blanc-ral9003",
+  "4 012 21": "https://www.legrand.fr/pro/catalogue/coffret-drivia-18-modules-1-rangee-ip30-ik05-blanc-ral9003",
+  "0 300 67": "https://www.legrand.fr/pro/catalogue/goulotte-gtl-complete-avec-2-couvercles-drivia-18-premium-65x355mm-hauteur-245m-a-260m",
+  "4 011 81": "https://www.legrand.fr/pro/catalogue/platine-disjoncteur-branchement-et-compteur-pour-drivia-13-et-18-225x250x45mm",
+  "4 011 91": "https://www.legrand.fr/pro/catalogue/platine-pour-disjoncteur-de-branchement-seul-pour-drivia-13-et-18-225x250x45mm",
+  "4 011 89": "https://www.legrand.fr/pro/catalogue/32062-habillage-drivia-18-modules-pour-platine-13-modules/habillage-drivia-18-modules-pour-platine-13-ref-4-011-81-91",
+  "4 182 62": "https://www.legrand.fr/pro/catalogue/32094-pret-a-poser-triple-playgigabit-tv-sur-rj-ready/pret-a-poser-coffret-multimedia-triple-play-gigabit-drivia-18-tv-sur-rj-ready",
   "4 067 82": "https://www.legrand.fr/pro/catalogue/disjoncteur-phaseneutre-dnx34500-6ka-arrivee-et-sortie-borne-automatique-1pn-230v-10a-courbe-c-1-module",
   "4 067 83": "https://www.legrand.fr/pro/catalogue/disjoncteur-phaseneutre-dnx34500-6ka-arrivee-et-sortie-borne-automatique-1pn-230v-16a-courbe-c-1-module",
   "4 067 84": "https://www.legrand.fr/pro/catalogue/disjoncteur-phaseneutre-dnx34500-6ka-arrivee-et-sortie-borne-automatique-1pn-230v-20a-courbe-c-1-module",
