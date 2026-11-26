@@ -150,7 +150,7 @@ const E = {
   P1: dj(16, "P1 – Prises séjour", ["8 prises du séjour"]),
   P2: dj(16, "P2 – Prises entrée, WC, cellier", ["Prises de l'entrée, du WC et du cellier"]),
   P4: dj(16, "P4 – Frigo et hotte", ["Réfrigérateur", "Hotte"]),
-  VDI: dj(16, "VDI – Coffret réseau et domotique", ["Coffret de communication (box, switch)", "Module Control (passerelle Netatmo) au tableau"]),
+  VDI: dj(16, "VDI – Baie réseau et domotique", ["6 prises dans la baie réseau (JimCore, switch, NAS, NUC, onduleur en option)", "Module Control (passerelle Netatmo) au tableau"], { note: "16 A en 1,5 mm² : 8 prises au plus, 6 prévues. Si un onduleur est ajouté, le NAS et le NUC se branchent dessus." }),
   ID5: id(40, "ID5 – Prises étage et éclairage cuisine"),
   P5: dj(16, "P5 – Prises chambre 01", ["5 prises de la chambre 01"]),
   P6: dj(16, "P6 – Prises bureau", ["6 prises du bureau"]),
@@ -252,11 +252,16 @@ const E = {
     infos: [["Position", "Bas à 650 mm, haut à 900 mm"]],
     usage: "18 télérupteurs connectés, juste sous le tableau, jumelé avec lui (Drivia easy).",
     note: "Manettes à ≈ 0,78 m : un peu bas, sans gêne pour des télérupteurs qu'on ne manœuvre presque jamais (bouton de test en face avant)." },
-  GTL_COM: { kind: "gtl", nom: "Coffret de communication (2 rangées)", type: "Coffret Drivia 18 2 rangées, 375 × 355 mm, grade 2 TV",
-    ref: "Legrand 4 182 62 (prêt-à-poser Triple Play Gigabit) ou coffret 2 rangées à équiper",
-    infos: [["Position", "Bas à 250 mm, haut à 625 mm"], ["Arrivée", "Fibre (DTIo) et câble opérateur"], ["Alimentation", "Circuit VDI, 2 prises pour la box et le switch"]],
-    usage: "Box, switch, répartition RJ45 et TV. Le volume additionnel exigé (240 × 300 × 200 mm) est intégré ici ou juste à côté.",
-    note: "Ventilé et le plus grand possible pour ton matériel réseau : un switch qui chauffe dans un coffret fermé vieillit mal." },
+  GTL_COM: { kind: "gtl", nom: "Tableau de communication (1 rangée)", type: "Coffret Drivia 13 basique, 250 × 250 × 103,5 mm, 6 RJ45 grade 3 TV",
+    ref: "Legrand 4 132 10 + porte blanche 4 013 31",
+    infos: [["Position", "Bas à 375 mm, haut à 625 mm"], ["Arrivée", "Fibre opérateur (DTIo, place prévue dans le coffret)"], ["Départs", "4 RJ45 minimum vers les pièces (2 juxtaposées au séjour + 2 dans deux autres pièces), 2 de réserve"]],
+    usage: "Le minimum exigé par la norme en rénovation totale. Ton réseau en fibre LC et ton matériel sont dans la baie à côté.",
+    note: "La fibre opérateur part du DTIo vers JimCore, dans la baie, par une jarretière." },
+  GTL_BAIE: { kind: "gtl", nom: "Baie réseau 10 pouces (à côté de la GTL)", type: "Baie murale 10 pouces, 9U environ, profondeur 300 mm ou plus, ventilée",
+    ref: "Hors Legrand (modèle à choisir)",
+    infos: [["Position", "À droite de l'ETEL, bas à ≈ 900 mm, haut à ≈ 1 400 mm"], ["Contenu", "JimCore (reçoit la fibre opérateur), switch CSS610-8G-2S+, NAS Synology, NUC, tiroir de brassage LC"], ["Alimentation", "Circuit VDI : 6 prises (ou bandeau), onduleur en option"]],
+    usage: "Ton matériel réseau ne tient pas dans un coffret Drivia (≈ 10 cm de profondeur utile, le NAS en fait ≈ 23).",
+    note: "Le NAS et le NUC tournent en continu : aération haute et basse du placard, voire un petit ventilateur. Profondeur du placard à valider avec l'architecte." },
   BT: { kind: "terre", nom: "Bornier de terre du tableau principal (borne principale de terre)", type: "Borniers de répartition verts isolés IP2X, 26 + 16 départs",
     ref: "Legrand 4 048 39 + 0 048 35 (si non fournis avec le coffret)",
     infos: [["Arrivée", "Conducteur de terre 16 mm² isolé depuis la barrette de coupure (mur extérieur), sur la borne d'arrivée 6 à 25 mm² du 4 048 39"], ["Départs", "Terres de tous les circuits et du parafoudre, liaison équipotentielle principale (6 mm²), liaisons équipotentielles des salles de bain (2,5 mm²)"]],
@@ -577,8 +582,8 @@ function dessinerGTL() {
   const sol = mm(0), plafond = mm(HAUT);
   el("rect", { x: 0, y: 0, width: vbW, height: vbH, fill: "transparent" });
   // sol, plafond
-  el("rect", { x: 40, y: sol, width: 640, height: 10, fill: "#cfcbc0" });
-  el("rect", { x: 40, y: plafond - 10, width: 640, height: 10, fill: "#cfcbc0" });
+  el("rect", { x: 40, y: sol, width: 700, height: 10, fill: "#cfcbc0" });
+  el("rect", { x: 40, y: plafond - 10, width: 700, height: 10, fill: "#cfcbc0" });
   el("text", { x: 44, y: sol + 26, "font-size": 11, fill: "#6b6a64" }, svg, "Sol fini");
   el("text", { x: 44, y: plafond - 16, "font-size": 11, fill: "#6b6a64" }, svg, "Plafond (≈ 2 500 mm)");
   // ETEL
@@ -594,7 +599,7 @@ function dessinerGTL() {
   el("line", { x1: gx + larg(220), x2: gx + larg(220), y1: plafond, y2: sol, stroke: "#d4d1c8" }, gg);
   // lignes : haut (étage, combles) et bas (RDC)
   const gaines = (y1, y2) => { for (let i = 0; i < 9; i++) el("line", { x1: gx + 10 + i * 8, x2: gx + 10 + i * 8, y1, y2, stroke: "#9fb7d6", "stroke-width": 2.2 }, gg); };
-  gaines(plafond, mm(1860)); gaines(mm(240), sol);
+  gaines(plafond, mm(1860)); gaines(mm(365), sol);
   el("text", { x: gx + gw + 8, y: plafond + 34, "font-size": 10, fill: "#4a6f9e" }, gg, "↑ lignes étage et combles");
   el("text", { x: gx + gw + 8, y: sol - 10, "font-size": 10, fill: "#4a6f9e" }, gg, "↓ lignes RDC, fibre, terre");
   // coffrets
@@ -618,7 +623,25 @@ function dessinerGTL() {
       for (let m = 0; m < 18; m++) el("rect", { x: gx + 13 + m * ((gw - 26) / 18), y: ry + 3, width: (gw - 26) / 18 - 1.5, height: (h - 46) / n - 14, rx: 1, fill: "#ffffff", stroke: "#cfccc2", "stroke-width": .6 }, g);
     }
   };
-  bloc("GTL_COM", 250, 625, "#eef3fa", "Coffret de communication", "2 rangées · fibre, box, switch, RJ45", rangees(2));
+  bloc("GTL_COM", 375, 625, "#eef3fa", "Communication", "1 rangée · DTIo, 6 RJ45", rangees(1));
+  // baie réseau, à côté de l'ETEL
+  {
+    const g = hitGroup("GTL_BAIE"), bx = 580, bw = larg(300), by = mm(1400), bh = larg(500);
+    el("rect", { class: "body", x: bx, y: by, width: bw, height: bh, rx: 5, fill: "#2f3338", stroke: "#1d2024", "stroke-width": 1.4 }, g);
+    const lignes = ["JimCore", "CSS610", "NUC", "NAS"];
+    lignes.forEach((t, i) => {
+      const yy = by + 12 + i * ((bh - 20) / 4), hh = (bh - 20) / 4 - 6;
+      el("rect", { x: bx + 8, y: yy, width: bw - 16, height: hh, rx: 2, fill: i === 3 ? "#4a4f57" : "#3c4148", stroke: "#5b616a" }, g);
+      el("text", { x: bx + bw / 2, y: yy + hh / 2 + 4, "text-anchor": "middle", "font-size": 9.5, "font-weight": 600, fill: "#e8eaed" }, g, t);
+    });
+    el("text", { x: bx + bw / 2, y: by - 22, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: "#2b2a27" }, g, "Baie réseau 10″");
+    el("text", { x: bx + bw / 2, y: by - 8, "text-anchor": "middle", "font-size": 9.5, fill: "#55534d" }, g, "hors ETEL, ventilée");
+    [[1400, by], [900, by + bh]].forEach(([v, yy]) => el("text", { x: bx + bw + 6, y: yy + 4, "font-size": 10, fill: "#6b6a64" }, svg, v.toLocaleString("fr-FR")));
+    // jarretière fibre opérateur : DTIo → JimCore
+    const yc = mm(500), xc = gx + gw;
+    el("path", { d: `M${xc} ${yc}H${bx - 20}V${by + 22}H${bx + 8}`, stroke: "#e0a21b", "stroke-width": 2, fill: "none", "stroke-dasharray": "6 3" });
+    el("text", { x: xc + 10, y: yc - 6, "font-size": 9.5, fill: "#9a6c0b" }, svg, "fibre opérateur → JimCore");
+  }
   bloc("GTL_TL", 650, 900, "#ffffff", "Télérupteurs connectés", "1 rangée · 4 012 21", rangees(1));
   bloc("GTL_TAB", 925, 1550, "#ffffff", "Tableau principal", "4 rangées · 4 012 24", rangees(4));
   bloc("GTL_PC", 1575, 1825, "#fbf6ea", "", null, (g, y, h) => {
@@ -911,6 +934,7 @@ const LEGRAND_URL = {
   "4 011 81": "https://www.legrand.fr/pro/catalogue/platine-disjoncteur-branchement-et-compteur-pour-drivia-13-et-18-225x250x45mm",
   "4 011 91": "https://www.legrand.fr/pro/catalogue/platine-pour-disjoncteur-de-branchement-seul-pour-drivia-13-et-18-225x250x45mm",
   "4 011 89": "https://www.legrand.fr/pro/catalogue/32062-habillage-drivia-18-modules-pour-platine-13-modules/habillage-drivia-18-modules-pour-platine-13-ref-4-011-81-91",
+  "4 132 10": "https://www.legrand.fr/pro/catalogue/coffret-de-communication-equipe-de-6-connecteurs-rj45-pour-application-grade-3-tv",
   "4 182 62": "https://www.legrand.fr/pro/catalogue/32094-pret-a-poser-triple-playgigabit-tv-sur-rj-ready/pret-a-poser-coffret-multimedia-triple-play-gigabit-drivia-18-tv-sur-rj-ready",
   "4 067 82": "https://www.legrand.fr/pro/catalogue/disjoncteur-phaseneutre-dnx34500-6ka-arrivee-et-sortie-borne-automatique-1pn-230v-10a-courbe-c-1-module",
   "4 067 83": "https://www.legrand.fr/pro/catalogue/disjoncteur-phaseneutre-dnx34500-6ka-arrivee-et-sortie-borne-automatique-1pn-230v-16a-courbe-c-1-module",
