@@ -229,6 +229,37 @@ const E = {
     note: "Emplacement réservé. La gaine TPC Ø 63 avec tire-fil est posée pendant le terrassement ; câble et calibre se décident avec l'usage du chalet (éclairage et prises, ou chauffage)." }),
 
   /* ---------- Tableau des combles ---------- */
+  GTL_ETEL: { kind: "gtl", nom: "ETEL – Espace technique électrique du logement", type: "Volume réservé, du sol au plafond",
+    infos: [["Dimensions mini", "600 mm de large × 250 mm de profondeur, sur toute la hauteur"], ["Emplacement proposé", "Placard de l'entrée (à valider avec l'architecte)"], ["Interdit", "Aucune canalisation d'eau, de gaz ou de chauffage"]],
+    usage: "Volume qui reçoit la GTL. Après pose, sa largeur peut se limiter à la largeur de la GTL + 100 mm.",
+    note: "Garder un dégagement libre devant pour ouvrir les portes des coffrets et intervenir. Pas de porte métallique ni d'isolant à feuille alu : le Module Control communique en Wi-Fi." },
+  GTL_GOUL: { kind: "gtl", nom: "Goulotte GTL Drivia 18 Premium", type: "Goulotte 65 × 355 mm, hauteur réglable 2,45 à 2,60 m, 2 couvercles",
+    ref: "Legrand 0 300 67",
+    infos: [["Largeur", "355 mm : celle des coffrets Drivia 18"], ["Couvercles", "220 mm (courant fort) + 85 mm (communication)"], ["Fixation des coffrets", "Drivia clip, réglage en hauteur"]],
+    usage: "Reçoit les coffrets et toutes les lignes : arrivée Enedis, départs vers l'étage et les combles par le haut, vers le RDC par le bas.",
+    note: "Environ 50 lignes en étoile + attentes : garder ~15 cm libres au-dessus et au-dessous des coffrets pour les courbures. GTL obligatoire en 600 × 200 mm minimum pour un logement de plus de 35 m²." },
+  GTL_PC: { kind: "gtl", nom: "Panneau de contrôle Enedis", type: "Compteur Linky + disjoncteur de branchement (AGCP 500 mA sélectif)",
+    infos: [["Hauteur de la manette", "≈ 1,68 m : dans la plage imposée 0,90 m – 1,80 m"], ["Option A", "Linky déplacé dans la GTL avec le disjoncteur"], ["Option B (conseillée)", "Linky en coffret en limite de propriété, seul le disjoncteur dans la GTL"]],
+    usage: "Arrivée de l'énergie, aujourd'hui dans le salon, à déplacer dans la GTL de l'entrée.",
+    note: "Le déplacement du compteur se fait par Enedis, sur devis. L'option B libère le haut de la GTL et permet la relève sans entrer dans la maison. La liaison entre le compteur et le disjoncteur reste sous la responsabilité d'Enedis jusqu'aux bornes aval du disjoncteur." },
+  GTL_TAB: { kind: "gtl", nom: "Tableau principal (4 rangées)", type: "Coffret Drivia 18, 625 × 355 mm",
+    ref: "Legrand 4 012 24", aval: ["REPART"],
+    infos: [["Position", "Bas à 925 mm, haut à 1 550 mm"], ["Manettes", "Rangée haute ≈ 1,47 m, rangée basse ≈ 1,00 m"]],
+    usage: "Répartiteur, parafoudre, différentiels et disjoncteurs. Voir l'onglet « Tableau principal »." },
+  GTL_TL: { kind: "gtl", nom: "Coffret des télérupteurs (1 rangée)", type: "Coffret Drivia 18, 250 × 355 mm",
+    ref: "Legrand 4 012 21", aval: ["TL1"],
+    infos: [["Position", "Bas à 650 mm, haut à 900 mm"]],
+    usage: "18 télérupteurs connectés, juste sous le tableau, jumelé avec lui (Drivia easy).",
+    note: "Manettes à ≈ 0,78 m : un peu bas, sans gêne pour des télérupteurs qu'on ne manœuvre presque jamais (bouton de test en face avant)." },
+  GTL_COM: { kind: "gtl", nom: "Coffret de communication (2 rangées)", type: "Coffret Drivia 18 2 rangées, 375 × 355 mm, grade 2 TV",
+    ref: "Legrand 4 182 62 (prêt-à-poser Triple Play Gigabit) ou coffret 2 rangées à équiper",
+    infos: [["Position", "Bas à 250 mm, haut à 625 mm"], ["Arrivée", "Fibre (DTIo) et câble opérateur"], ["Alimentation", "Circuit VDI, 2 prises pour la box et le switch"]],
+    usage: "Box, switch, répartition RJ45 et TV. Le volume additionnel exigé (240 × 300 × 200 mm) est intégré ici ou juste à côté.",
+    note: "Ventilé et le plus grand possible pour ton matériel réseau : un switch qui chauffe dans un coffret fermé vieillit mal." },
+  GTL_TERRE: { kind: "gtl", nom: "Terre : borne principale et barrette de coupure", type: "En pied de GTL",
+    aval: ["BPT", "BARR"],
+    infos: [["Position", "100 à 200 mm du sol"], ["Arrivée", "Câble cuivre 25 mm² depuis les piquets"]],
+    usage: "Accessible sans démonter les coffrets, pour la mesure de la terre." },
   BT: { kind: "terre", nom: "Bornier de terre du tableau principal", type: "Borniers de répartition verts, 26 + 16 départs",
     ref: "Legrand 4 048 39 + 0 048 35 (si non fournis avec le coffret)",
     infos: [["Arrivée", "Liaison 16 mm² depuis la borne principale de terre (GTL)"], ["Départs", "Terres de tous les circuits et du parafoudre"]],
@@ -284,6 +315,11 @@ const PANELS = {
       { label: "Rangée 1", items: ["IDC1", "EC1", "EC2", "PC1", "PC2", "IDC2", "PSB", "SSC"] },
       { label: "Rangée 2 · télérupteurs connectés et réserve", items: ["TLC1", "TLC2", "TLC3", "TLC4"] }
     ]
+  },
+  gtl: {
+    titre: "GTL (proposition)",
+    resume: "Proposition d'implantation de la gaine technique logement dans le placard de l'entrée, après déplacement du compteur et du disjoncteur Enedis depuis le salon. Cotes en mm depuis le sol fini.",
+    vue: "gtl", source: "GTL_PC", rows: []
   }
 };
 
@@ -539,9 +575,87 @@ function dessinerRepart(g, k, x, top, w) {
   }
 }
 
+function dessinerGTL() {
+  const S = 0.36, X0 = 230, Y0 = 60, HAUT = 2500, mm = v => Y0 + (HAUT - v) * S, larg = v => v * S;
+  vbW = 900; vbH = Y0 + HAUT * S + 70;
+  svg.setAttribute("viewBox", `0 0 ${vbW} ${vbH}`);
+  const sol = mm(0), plafond = mm(HAUT);
+  el("rect", { x: 0, y: 0, width: vbW, height: vbH, fill: "transparent" });
+  // sol, plafond
+  el("rect", { x: 40, y: sol, width: 640, height: 10, fill: "#cfcbc0" });
+  el("rect", { x: 40, y: plafond - 10, width: 640, height: 10, fill: "#cfcbc0" });
+  el("text", { x: 44, y: sol + 26, "font-size": 11, fill: "#6b6a64" }, svg, "Sol fini");
+  el("text", { x: 44, y: plafond - 16, "font-size": 11, fill: "#6b6a64" }, svg, "Plafond (≈ 2 500 mm)");
+  // ETEL
+  const ex = X0 - larg(122), ew = larg(600);
+  const ge = hitGroup("GTL_ETEL");
+  el("rect", { class: "body", x: ex, y: plafond, width: ew, height: sol - plafond, fill: "rgba(120,160,210,.06)", stroke: "#7b9cc7", "stroke-dasharray": "8 5" }, ge);
+  el("text", { x: ex - 8, y: plafond + 18, "text-anchor": "end", "font-size": 11, fill: "#4a6f9e", "font-weight": 600 }, ge, "ETEL");
+  el("text", { x: ex - 8, y: plafond + 32, "text-anchor": "end", "font-size": 10, fill: "#4a6f9e" }, ge, "600 × 250 mm");
+  // goulotte
+  const gx = X0, gw = larg(355);
+  const gg = hitGroup("GTL_GOUL");
+  el("rect", { class: "body", x: gx, y: plafond, width: gw, height: sol - plafond, fill: "#f3f2ee", stroke: "#bdbab1" }, gg);
+  el("line", { x1: gx + larg(220), x2: gx + larg(220), y1: plafond, y2: sol, stroke: "#d4d1c8" }, gg);
+  // lignes : haut (étage, combles) et bas (RDC)
+  const gaines = (y1, y2) => { for (let i = 0; i < 9; i++) el("line", { x1: gx + 10 + i * 8, x2: gx + 10 + i * 8, y1, y2, stroke: "#9fb7d6", "stroke-width": 2.2 }, gg); };
+  gaines(plafond, mm(2080)); gaines(mm(240), sol);
+  el("text", { x: gx + gw + 8, y: plafond + 34, "font-size": 10, fill: "#4a6f9e" }, gg, "↑ lignes étage et combles");
+  el("text", { x: gx + gw + 8, y: sol - 10, "font-size": 10, fill: "#4a6f9e" }, gg, "↓ lignes RDC, fibre, terre");
+  // coffrets
+  const bloc = (k, bas, haut, couleur, titre, sous, dessinInterne) => {
+    const g = hitGroup(k), y = mm(haut), h = larg(haut - bas);
+    el("rect", { class: "body", x: gx, y, width: gw, height: h, rx: 5, fill: couleur, stroke: "#8f8d86", "stroke-width": 1.4 }, g);
+    if (dessinInterne) dessinInterne(g, y, h);
+    el("text", { x: gx + gw / 2, y: y + 16, "text-anchor": "middle", "font-size": 11, "font-weight": 700, fill: "#2b2a27" }, g, titre);
+    if (sous) el("text", { x: gx + gw / 2, y: y + 30, "text-anchor": "middle", "font-size": 9.5, fill: "#55534d" }, g, sous);
+    // cotes à gauche
+    [[bas, y + h], [haut, y]].forEach(([v, yy]) => {
+      el("line", { x1: gx - 40, x2: gx - 4, y1: yy, y2: yy, stroke: "#9a988f", "stroke-dasharray": "3 3" });
+      el("text", { x: gx - 44, y: yy + 4, "text-anchor": "end", "font-size": 10, fill: "#6b6a64" }, svg, v.toLocaleString("fr-FR"));
+    });
+    return g;
+  };
+  const rangees = (n) => (g, y, h) => {
+    for (let i = 0; i < n; i++) {
+      const ry = y + 38 + i * ((h - 46) / n);
+      el("rect", { x: gx + 10, y: ry, width: gw - 20, height: (h - 46) / n - 8, rx: 2, fill: "#e8e6df" }, g);
+      for (let m = 0; m < 18; m++) el("rect", { x: gx + 13 + m * ((gw - 26) / 18), y: ry + 3, width: (gw - 26) / 18 - 1.5, height: (h - 46) / n - 14, rx: 1, fill: "#ffffff", stroke: "#cfccc2", "stroke-width": .6 }, g);
+    }
+  };
+  bloc("GTL_TERRE", 100, 200, "#3f9a55", "", null, (g, y, h) => {
+    el("text", { x: gx + gw / 2, y: y + h / 2 + 4, "text-anchor": "middle", "font-size": 9.5, "font-weight": 700, fill: "#fff" }, g, "Terre + barrette");
+  });
+  bloc("GTL_COM", 250, 625, "#eef3fa", "Coffret de communication", "2 rangées · fibre, box, switch, RJ45", rangees(2));
+  bloc("GTL_TL", 650, 900, "#ffffff", "Télérupteurs connectés", "1 rangée · 4 012 21", rangees(1));
+  bloc("GTL_TAB", 925, 1550, "#ffffff", "Tableau principal", "4 rangées · 4 012 24", rangees(4));
+  bloc("GTL_PC", 1575, 2050, "#fbf6ea", "Panneau de contrôle Enedis", "Linky (option A) + disjoncteur", (g, y, h) => {
+    el("rect", { x: gx + 30, y: y + 40, width: gw - 60, height: 58, rx: 6, fill: "#d9e6c8", stroke: "#7f9a5a", "stroke-dasharray": "5 3" }, g);
+    el("text", { x: gx + gw / 2, y: y + 73, "text-anchor": "middle", "font-size": 10, fill: "#4f6a2e" }, g, "Linky (si gardé à l'intérieur)");
+    el("rect", { x: gx + 44, y: y + h - 62, width: gw - 88, height: 50, rx: 4, fill: "#f4f3ef", stroke: "#6b6a64" }, g);
+    el("rect", { x: gx + gw / 2 - 9, y: y + h - 52, width: 18, height: 26, rx: 2, fill: "#2b2a27" }, g);
+    el("text", { x: gx + gw / 2, y: y + h - 16, "text-anchor": "middle", "font-size": 9, fill: "#55534d" }, g, "Disjoncteur 500 mA S");
+  });
+  // zone réglementaire de la manette du disjoncteur
+  const zx = gx + gw + 26;
+  el("rect", { x: zx, y: mm(1800), width: 10, height: larg(900), fill: "rgba(208,58,44,.18)", stroke: "#d03a2c" });
+  el("text", { x: zx + 16, y: mm(1800) + 4, "font-size": 10, fill: "#a3392b" }, svg, "1 800");
+  el("text", { x: zx + 16, y: mm(900) + 4, "font-size": 10, fill: "#a3392b" }, svg, "900");
+  el("text", { x: zx + 16, y: mm(1350), "font-size": 10, fill: "#a3392b" }, svg, "zone de la manette");
+  el("text", { x: zx + 16, y: mm(1350) + 13, "font-size": 10, fill: "#a3392b" }, svg, "du disjoncteur Enedis");
+  el("line", { x1: gx + gw / 2 + 12, x2: zx, y1: mm(1680), y2: mm(1680), stroke: "#d03a2c", "stroke-dasharray": "4 3" });
+  el("text", { x: zx + 16, y: mm(1680) + 4, "font-size": 10, "font-weight": 700, fill: "#a3392b" }, svg, "≈ 1 680 : manette");
+  // arrivée Enedis
+  el("path", { d: `M${gx + gw - 30} ${plafond}V${mm(2050)}`, stroke: "#2b2a27", "stroke-width": 3, fill: "none" });
+  el("text", { x: gx + gw + 8, y: plafond + 50, "font-size": 10, fill: "#2b2a27" }, svg, "↓ arrivée Enedis (depuis le salon");
+  el("text", { x: gx + gw + 8, y: plafond + 63, "font-size": 10, fill: "#2b2a27" }, svg, "ou la limite de propriété)");
+  el("text", { x: 44, y: vbH - 14, "font-size": 10.5, fill: "#6b6a64" }, svg, "Vue de face, échelle 1/1000 environ. Clique sur un élément pour sa fiche.");
+}
+
 function dessiner(pk) {
   const P = PANELS[pk];
   svg.innerHTML = "";
+  if (P.vue === "gtl") { dessinerGTL(); return; }
   vbW = RAIL_X + P.modules * U + 40;
   vbH = TOP + (P.rows.length - 1) * PITCH + H + 50 + (pk === "principal" ? 200 : 110);
   svg.setAttribute("viewBox", `0 0 ${vbW} ${vbH}`);
