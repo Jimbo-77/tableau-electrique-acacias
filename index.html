@@ -140,11 +140,11 @@ const E = {
     ref: "Legrand 4 004 02",
     infos: [["Arrivée", "6 à 16 mm² souple (10 à 25 mm² rigide)"], ["Départs", "1,5 à 10 mm² souple, bornes à vis"], ["Utilisés", "8 départs sur 9 (parafoudre, 5 interrupteurs différentiels, départ des combles TD-C, disjoncteur de la borne). ID-EXT est alimenté par peigne à travers le parafoudre"]],
     usage: "Reçoit la phase et le neutre du disjoncteur de branchement et les redistribue en fil souple 10 mm² vers le parafoudre et l'arrivée (en haut, à vis) de chaque interrupteur différentiel.",
-    note: "Préféré au peigne vertical VX³ (4 050 02) : celui-ci est limité à 12 kVA et n'alimente qu'un appareil par rangée, alors que les rangées 1 à 3 ont 2 ou 3 têtes de groupe. 1 départ reste libre pour une évolution." },
+    note: "Préféré au peigne vertical VX³ (4 050 02) : celui-ci est limité à 12 kVA et n'alimente qu'un appareil par rangée, alors que les rangées 1, 2 et 4 ont 1 ou 2 têtes de groupe. 1 départ reste libre pour une évolution." },
   SPD: { kind: "spd", n: 2, rating: ["SPD", "T2+T3"], nom: "Parafoudre", type: "Parafoudre type 2+3, 1P+N",
     ref: "Legrand 0 039 51", appareil: "Protection de déconnexion intégrée",
     usage: "Protège l'installation contre les surtensions (foudre, manœuvres sur le réseau).",
-    note: "Liaisons phase, neutre et terre les plus courtes possible : moins de 50 cm au total. D'où sa place en rangée 4, juste à côté du répartiteur qui l'alimente et au plus près du bornier de terre." },
+    note: "Liaisons phase, neutre et terre les plus courtes possible : moins de 50 cm au total. D'où sa place en rangée 3, juste à côté du répartiteur qui l'alimente, avec le bornier de terre fixé en bas du coffret, sous la rangée 4 : la liaison de terre reste courte." },
 
   ID1: id(40, "ID1 – Prises RDC et éclairage étage"),
   P1: dj(16, "P1 – Prises séjour", ["8 prises du séjour"]),
@@ -191,7 +191,7 @@ const E = {
     section: "10 mm² (prêt pour 7,4 kW, avec alors un disjoncteur 40 A et une autre borne)",
     infos: [["Repère sur le schéma Legrand", "Q2"], ["Intégré à la borne", "Q1 : interrupteur différentiel 4 115 54 (bornes 1 × 10 mm² max) ; KM1 : bobine à émission 4 062 76, commandée par C1 / C2 ; détection 6 mA DC"], ["Réglage de la borne", "16 A en usine, non modifiable"]],
     usage: "Seul appareil de la borne à installer au tableau : il protège la ligne contre les surcharges et les courts-circuits.",
-    note: "Pas de différentiel 30 mA au tableau : il est dans la borne (guide installateur Legrand PRT224003). Placé en rangée 4 avec TD-C, à côté du répartiteur qui les alimente directement : ses bornes à vis reçoivent le fil souple 10 mm². Schéma de raccordement Legrand LE14647AA/08." }),
+    note: "Pas de différentiel 30 mA au tableau : il est dans la borne (guide installateur Legrand PRT224003). Placé en rangée 3 avec TD-C, à côté du répartiteur qui les alimente directement : ses bornes à vis reçoivent le fil souple 10 mm². Schéma de raccordement Legrand LE14647AA/08." }),
 
   TL19: tl("Sous meubles hauts", "E3B"),
 
@@ -215,7 +215,7 @@ const E = {
     usage: "Commande l'éclairage du jardin, à la place d'un télérupteur. Placé à côté du disjoncteur E-EXT qui l'alimente.",
     note: "Déjà en ta possession. Le neutre ne doit jamais être câblé sur C1 ou C2. Protection en amont ≤ 20 A : le disjoncteur E-EXT 10 A convient. Pilotage par les commandes sans fil non décrit dans la notice : à tester à la mise en service." },
 
-  /* ---------- Extérieur (rangée 4) ---------- */
+  /* ---------- Extérieur (rangée 3) ---------- */
   IDEXT: id(63, "ID-EXT – Circuits extérieurs", { via: "SPD",
     usage: "Différentiel 30 mA réservé à l'extérieur. Un défaut dehors (humidité) ne coupe que l'extérieur : frigo, réseau et domotique restent alimentés.",
     note: "Obligatoire dès qu'un circuit alimente du matériel non fixé au bâtiment (chalet, bornes ou spots de jardin, prise sur potelet). 63 A pour encaisser le futur départ du chalet." }),
@@ -297,13 +297,13 @@ const LABEL = { PTV: "P-TV", E1A: "E1a", E1B: "E1b", E2A: "E2a", E2B: "E2b", E3A
 const PANELS = {
   principal: {
     titre: "Tableau principal",
-    resume: "Drivia 18, 4 rangées de 18 modules (4 012 24) + coffret d'une rangée pour les télérupteurs (4 012 21).",
+    resume: "Drivia 18, 4 rangées de 18 modules (4 012 24) + coffret d'une rangée pour les télérupteurs (4 012 21). Les disjoncteurs d'éclairage sont sur les rangées 4 et 2, au plus près du coffret des télérupteurs juste en dessous.",
     source: "AGCP", modules: 18,
     rows: [
-      { label: "Rangée 1", items: ["ID1", "P1", "P2", "P4", "VDI", "E4", "E5A", "E5B", "MCTRL"] },
-      { label: "Rangée 2", items: ["ID2", "P3", "S1", "S2", "S3", "S4", "S5", "PTV", "ID4", "T1", "PAC1", "PAC2"] },
-      { label: "Rangée 3", items: ["ID3", "E1A", "E1B", "E2A", "E2B", "VR", "VMC", "ID5", "P5", "P6", "P7", "SS", "E3A", "E3B"] },
-      { label: "Rangée 4 · répartiteur, départs directs et extérieur", items: ["REPART", "SPD", "IDEXT", "EEXT", "PEXT", "CHALET", "CT20", "TDC", "DJVE"] },
+      { label: "Rangée 1", items: ["ID2", "P3", "S1", "S2", "S3", "S4", "S5", "PTV", "ID4", "T1", "PAC1", "PAC2"] },
+      { label: "Rangée 2 · éclairage étage (E4, E5a, E5b)", items: ["ID1", "P1", "P2", "P4", "VDI", "E4", "E5A", "E5B", "MCTRL"] },
+      { label: "Rangée 3 · répartiteur, départs directs et extérieur", items: ["REPART", "SPD", "IDEXT", "EEXT", "PEXT", "CHALET", "CT20", "TDC", "DJVE"] },
+      { label: "Rangée 4 · éclairage RDC (E1a à E3b), au plus près des télérupteurs", items: ["ID3", "E1A", "E1B", "E2A", "E2B", "VR", "VMC", "ID5", "P5", "P6", "P7", "SS", "E3A", "E3B"] },
       { label: "Coffret 1 rangée · télérupteurs connectés", items: ["TL1","TL2","TL3","TL4","TL5","TL6","TL7","TL8","TL9","TL11","TL12","TL13","TL14","TL15","TL16","TL17","TL18","TL19"] }
     ]
   },
